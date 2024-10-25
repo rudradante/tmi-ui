@@ -1,0 +1,30 @@
+{
+  "environment": "dev",
+  "server": {
+    "baseUrl": {
+      "dev": "aec5-103-70-44-217.ngrok-free.app"
+    },
+    "port": {
+      "dev": "443"
+    },
+    "protocol": {
+      "dev": "https"
+    }
+  },
+  "theme": {
+    "primaryThemeBackgroundColor": "1B89A1",
+    "primaryThemeForegroundColor": "F2B866",
+    "primaryThemeTextColor": "FFFFFF",
+    "primaryTextSize": "14",
+    "secondaryTextSize": "12",
+    "appBarBackgroundColor": "1B89A1",
+    "appBarForegroundColor": "FFFFFF",
+    "scaffoldBackgroundColor": "1B89A1",
+    "primaryButtonColor": "7A80A6",
+    "inactiveTextColor": "CE9B9B",
+    "contentTextColor": "000000"
+  },
+  "app":{
+    "timeZoneOffset": "19800"
+  }
+}
