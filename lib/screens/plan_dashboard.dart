@@ -41,7 +41,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
     return CustomScaffold(
       showBackButton: false,
       title: sf.maxComponents <= 2 ? "My Plans" : "Let's add a plan",
-      appBarTitleSize: 40,
+      appBarTitleSize: 32,
       floatingActionButton: FloatingActionButton(
         shape: const CircleBorder(),
         onPressed: addNewPlanTapped,
@@ -60,7 +60,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
                 textStyle: GoogleFonts.seaweedScript(
                     textStyle: TextStyle(
                         fontWeight: FontWeight.normal,
-                        fontSize: 40,
+                        fontSize: 32,
                         color: HexColor.fromHex(theme.appBarForegroundColor)))),
           ),
         MyPlanDateSelector(key: UniqueKey(), selectedDateChanged, selectedDate)

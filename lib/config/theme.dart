@@ -25,7 +25,9 @@ class ThemeConfig {
       this.scaffoldBackgroundColor,
       this.primaryButtonColor,
       this.primaryTextSize,
-      this.secondaryTextSize);
+      this.secondaryTextSize,
+      this.contentTextColor,
+      this.inactiveTextColor);
 
   static ThemeConfig fromJson(Map<String, dynamic> json) {
     return ThemeConfig(
@@ -37,7 +39,9 @@ class ThemeConfig {
         json['scaffoldBackgroundColor'],
         json['primaryButtonColor'],
         int.parse(json['primaryTextSize'].toString()),
-        int.parse(json['secondaryTextSize'].toString()));
+        int.parse(json['secondaryTextSize'].toString()),
+        json['contentTextColor'],
+        json['inactiveTextColor']);
   }
 }
 
@@ -73,5 +77,6 @@ ScreenFactors calculateScreenFactors(BuildContext context) {
   if (cf >= 1.2) cf = 1.2;
   double textSize =
       ConfigProvider.getThemeConfig().primaryTextSize.toDouble() * cf / 1.2;
+  if (textSize > 16) textSize = 16;
   return ScreenFactors(size, cf, textSize, maxComponents);
 }

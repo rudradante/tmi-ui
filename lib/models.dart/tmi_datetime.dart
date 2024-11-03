@@ -33,7 +33,7 @@ class TmiDateTime {
             .abs()
             .floor();
     if ((minutesDifference ~/ 60) > 0) {
-      result += "${minutesDifference ~/ 60} Hr and ";
+      result += "${minutesDifference ~/ 60} Hr & ";
     } else {
       return minutesDifference < 0 ? "0 Min" : "$minutesDifference Min";
     }
@@ -41,7 +41,7 @@ class TmiDateTime {
     if (minutesDifference > 0) {
       result += "$minutesDifference Min";
     } else {
-      result = result.substring(0, result.lastIndexOf(" and"));
+      result = result.substring(0, result.lastIndexOf(" &"));
     }
     return result;
   }
@@ -54,7 +54,7 @@ class TmiDateTime {
     String monthStr = dateTime.month < 10
         ? ("0${dateTime.month}")
         : dateTime.month.toString();
-    result = "$dayStr/$monthStr/${dateTime.year}";
+    result = "$dayStr.$monthStr.${dateTime.year}";
     return result;
   }
 

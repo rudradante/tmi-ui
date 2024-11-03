@@ -16,17 +16,18 @@ class PlanBreak {
   }
 
   static String? validateBreakTimingsWithPlan(Plan plan, PlanBreak planBreak) {
-    if (planBreak.startTime.getMillisecondsSinceEpoch() <
-        plan.startTime.getMillisecondsSinceEpoch()) {
-      return "Break start time cannot be less than plan start time";
+    var breakStartTime = planBreak.startTime.getMillisecondsSinceEpoch();
+    var breakEndTime = planBreak.endTime.getMillisecondsSinceEpoch();
+    var planStartTime = plan.startTime.getMillisecondsSinceEpoch();
+    var planEndTime = plan.endTime.getMillisecondsSinceEpoch();
+    if (breakStartTime >= breakEndTime) {
+      return "Break interval must be a least a minute long";
     }
-    if (planBreak.endTime.getMillisecondsSinceEpoch() >
-        plan.endTime.getMillisecondsSinceEpoch()) {
-      return "Break end time cannot be ahead of plan end time";
-    }
-    if (planBreak.startTime.getMillisecondsSinceEpoch() >
-        planBreak.endTime.getMillisecondsSinceEpoch()) {
-      return "Break start time cannot me ahead of end time";
+    if (breakStartTime <= planStartTime ||
+        breakStartTime >= planEndTime ||
+        breakEndTime <= planStartTime ||
+        breakEndTime >= planEndTime) {
+      return "Break intervals must be within plan duration";
     }
     return null;
   }

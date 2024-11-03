@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:tmiui/config/config_provider.dart';
-import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/custom_widgets/custom_list_view.dart';
 import 'package:tmiui/screens/my_plan_card.dart';
 

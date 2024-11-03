@@ -39,7 +39,7 @@ class CustomScaffold extends StatefulWidget {
       this.metaWidget,
       this.floatingActionButton,
       this.onMetaWidgetTapped,
-      this.appBarTitleSize = 18,
+      this.appBarTitleSize = 16,
       this.sideMenuOptionTitle = "Options",
       this.metaWidgetOptionTitle = "Reports",
       this.metaWidgetIcon = const Icon(Icons.poll_outlined),

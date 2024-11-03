@@ -1,5 +1,8 @@
 // ignore_for_file: use_build_context_synchronously, unused_import
+import "dart:convert";
+
 import "package:file_picker/file_picker.dart";
+import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
 import "package:numberpicker/numberpicker.dart";
 import "package:tmiui/config/config_provider.dart";
@@ -7,9 +10,12 @@ import "package:tmiui/config/theme.dart";
 import "package:tmiui/custom_widgets/custom_column.dart";
 import "package:tmiui/custom_widgets/custom_flat_button.dart";
 import "package:tmiui/custom_widgets/custom_list_view.dart";
+import "package:tmiui/custom_widgets/custom_snackbar.dart";
 import "package:tmiui/custom_widgets/custom_text.dart";
 import "package:tmiui/custom_widgets/grouping_container.dart";
 import "package:tmiui/custom_widgets/text_field.dart";
+import "package:tmiui/helpers/file_system.dart";
+import "package:tmiui/helpers/uri.dart";
 import "package:tmiui/models.dart/plan.dart";
 import "package:tmiui/models.dart/plan_references.dart";
 import "package:tmiui/models.dart/tmi_datetime.dart";
@@ -70,8 +76,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                 children: [
                   CustomTextField(
                     controller: _titleController,
-                    label: "Title",
-                    hintText: "What you want to do?",
+                    hintText: "Title",
                   ),
                   const SizedBox(
                     height: 8,
@@ -95,7 +100,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                         ))
                     .toList(),
                 child: CustomFlatButton(
-                    text: "Add Reference",
+                    text: "Add",
                     color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
               ),
               subtitle: "Add local or web locations of files",
@@ -135,6 +140,11 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
               elevated: elevatedContainer,
               label: "Schedule",
               subtitle: "Choose when you start and end this task",
+              leading: CustomFlatButton(
+                  onTap: () {},
+                  text:
+                      plan.startTime.getTimeDifferenceInDuration(plan.endTime),
+                  color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
               child: CustomRow(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -148,17 +158,12 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                       CustomFlatButton(
                           isOutlined: true,
                           onTap: chooseStartTimeTapped,
-                          text: plan.startTime.getTimeAsString(),
+                          text:
+                              "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
                           color: HexColor.fromHex(
                               theme.primaryThemeForegroundColor))
                     ],
                   ),
-                  CustomFlatButton(
-                      onTap: () {},
-                      text: plan.startTime
-                          .getTimeDifferenceInDuration(plan.endTime),
-                      color:
-                          HexColor.fromHex(theme.primaryThemeForegroundColor)),
                   CustomColumn(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -169,7 +174,8 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                       CustomFlatButton(
                           isOutlined: true,
                           onTap: chooseEndTimeTapped,
-                          text: plan.endTime.getTimeAsString(),
+                          text:
+                              "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
                           color: HexColor.fromHex(
                               theme.primaryThemeForegroundColor))
                     ],
@@ -179,6 +185,9 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           PlanBreaks(
             key: UniqueKey(),
             breaksUpdated: (breaks) => setState(() {
+              breaks.sort((a, b) => a.startTime
+                  .getMillisecondsSinceEpoch()
+                  .compareTo(b.startTime.getMillisecondsSinceEpoch()));
               plan.breaks = breaks;
             }),
             plan: plan,
@@ -209,64 +218,96 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     setState(() {});
   }
 
+  Future addWebLink({String locationHintText = "Hyperlink"}) async {
+    await showDialog(
+      context: context,
+      builder: (context) => CustomForm(
+          isDialog: true,
+          formData: <String, CustomFormData>{
+            locationHintText: CustomFormData(initialText: ""),
+            "Title": CustomFormData(initialText: "")
+          },
+          title: "Add New Reference",
+          submitText: "Done",
+          onSubmit: (values) {
+            var newReference = PlanReference.newReference(plan.planId);
+            newReference.hyperlink = values[locationHintText].toString();
+            newReference.description = values['Title'].toString();
+            plan.planReferences.add(newReference);
+            Navigator.pop(context);
+          }),
+    );
+
+    setState(() {});
+  }
+
+  Future addLocalFile() async {
+    if (kIsWeb) {
+      var proceed = await showShouldProceedDialog(
+          "Local reference",
+          "Adding local reference is only supported in desktop/mobile version. You will have to add the file location manually in web version. Do you want to continue?",
+          context);
+      if (!proceed) return;
+      await addWebLink(locationHintText: "File location");
+    }
+    var file = await FilePicker.platform.pickFiles();
+    if (file == null) {
+      return;
+    }
+    var newReference = PlanReference.newReference(plan.planId);
+    newReference.hyperlink = file.files.single.path!;
+    newReference.description = file.files.single.name;
+    plan.planReferences.add(newReference);
+    setState(() {});
+  }
+
   void addReferenceTapped(String val) async {
     if (val == "Web link") {
-      await showDialog(
-        context: context,
-        builder: (context) => CustomForm(
-            isDialog: true,
-            formData: <String, CustomFormData>{
-              "Hyperlink": CustomFormData(initialText: ""),
-              "Title": CustomFormData(initialText: "")
-            },
-            title: "Add Reference",
-            submitText: "Add",
-            onSubmit: (values) {
-              var newReference = PlanReference.newReference(plan.planId);
-              newReference.hyperlink = values['Hyperlink'].toString();
-              newReference.description = values['Title'].toString();
-              plan.planReferences.add(newReference);
-              Navigator.pop(context);
-            }),
-      );
-
-      setState(() {});
+      await addWebLink();
     } else if (val == "Local file") {
-      var file = await FilePicker.platform.pickFiles();
-      print(file == null);
-      if (file == null) {
-        return;
-      }
-      print(file.paths.single == null);
-      print(file.paths.single);
-      var newReference = PlanReference.newReference(plan.planId);
-      newReference.hyperlink = file.files.single.path!;
-      newReference.description = file.files.single.name;
-      plan.planReferences.add(newReference);
-      Navigator.pop(context);
-
-      setState(() {});
+      await addLocalFile();
     }
   }
 
   Future chooseStartTimeTapped() async {
-    var result = await chooseDateAndTime(context);
+    var result = await chooseDateAndTime(context, fieldLableText: "Start Time");
     if (result == null) return;
     plan.startTime = result;
     plan.breaks.removeWhere((element) =>
         element.startTime.getMillisecondsSinceEpoch() <=
         plan.startTime.getMillisecondsSinceEpoch());
     setState(() {});
+    showStartEndTimeValidationIfApplicable();
+    showBreakTimingValidationWithRespectToPlanIfApplicable();
+  }
+
+  void showStartEndTimeValidationIfApplicable() {
+    if (plan.startTime.getMillisecondsSinceEpoch() >=
+        plan.endTime.getMillisecondsSinceEpoch()) {
+      showSnackBarMessage(context,
+          "Seems like the start time is ahead or same as end time. Please update the end time");
+    }
+  }
+
+  void showBreakTimingValidationWithRespectToPlanIfApplicable() {
+    var idx = plan.breaks.indexWhere(
+        (e) => PlanBreak.validateBreakTimingsWithPlan(plan, e) != null);
+    if (idx >= 0) {
+      showSnackBarMessage(context,
+          PlanBreak.validateBreakTimingsWithPlan(plan, plan.breaks[idx]) ?? "");
+    }
   }
 
   Future chooseEndTimeTapped() async {
-    var result = await chooseDateAndTime(context);
+    var result = await chooseDateAndTime(context,
+        fieldLableText: "End Time",
+        firstDateTime: plan.startTime,
+        initialDateTime: plan.startTime);
     if (result == null) return;
     plan.endTime = result;
-    plan.breaks.removeWhere((element) =>
-        element.endTime.getMillisecondsSinceEpoch() >=
-        plan.endTime.getMillisecondsSinceEpoch());
     setState(() {});
+    showStartEndTimeValidationIfApplicable();
+    showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
   saveButtonTapped() async {
@@ -275,14 +316,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
             .millisecondsSinceEpoch
             .compareTo(plan.startTime.toDateTime().millisecondsSinceEpoch) <=
         0) {
-      await showMessageDialog(
-          "Invalid time", "Start time cannot be ahead of end time", context);
+      await showMessageDialog("Invalid time",
+          "Start time of the plan cannot be ahead of end time", context);
       return;
     }
     var requestPlan = plan;
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();
     Plan? result;
+    print(jsonEncode(requestPlan));
     if (int.tryParse(plan.planId) != null) {
       result = await Plan.createPlan(requestPlan, context);
     } else {
@@ -297,13 +339,10 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   void referenceTapped(String url) async {
-    try {
-      bool result = await launchUrlString(url);
-      if (!result) throw new Exception();
-    } catch (err) {
-      print(err);
-      await showMessageDialog(
-          "Invalid url", "Cannot open the reference", context);
+    if (UriHelper.isValidUrl(url)) {
+      await launchUrlString(url);
+    } else {
+      await AppFile.openFile(url, context);
     }
   }
 }
@@ -329,17 +368,21 @@ class _PlanBreaksState extends State<PlanBreaks> {
   @override
   Widget build(BuildContext context) {
     var theme = ConfigProvider.getThemeConfig();
+    breaks.sort((a, b) => a.startTime
+        .getMillisecondsSinceEpoch()
+        .compareTo(b.startTime.getMillisecondsSinceEpoch()));
     return GroupingContainer(
         leading: PopupMenuButton<String>(
           onSelected: breakOptionSelected,
-          itemBuilder: (context) => ["Add Break", "Use Pomodoro"]
-              .map((e) => PopupMenuItem<String>(
-                    value: e,
-                    child: CustomText(text: e),
-                  ))
-              .toList(),
+          itemBuilder: (context) =>
+              ["Use pomodoro", "Custom break", "Clear all"]
+                  .map((e) => PopupMenuItem<String>(
+                        value: e,
+                        child: CustomText(text: e),
+                      ))
+                  .toList(),
           child: CustomFlatButton(
-              text: "Add Break",
+              text: "Manage",
               color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
         ),
         elevated: true,
@@ -392,31 +435,31 @@ class _PlanBreaksState extends State<PlanBreaks> {
   }
 
   void addNewBreakTapped() async {
-    var st = widget.plan.startTime.toDateTime();
-    var et = widget.plan.endTime.toDateTime();
-    bool showDatePicker = st.day != et.day;
+    var st = widget.plan.startTime;
+    var et = widget.plan.endTime;
+    bool showDatePicker = st.toDateTime().day != et.toDateTime().day;
     PlanBreak? newBreak;
     if (showDatePicker) {
-      var startTime =
-          await chooseDateAndTime(context, fieldLableText: "Choose start time");
+      var startTime = await chooseDateAndTime(context,
+          fieldLableText: "Choose break start time",
+          initialDateTime: widget.plan.startTime,
+          firstDateTime: widget.plan.startTime,
+          lastDateTime: widget.plan.endTime);
       if (startTime == null) return;
-      var endTime =
-          await chooseDateAndTime(context, fieldLableText: "Choose end time");
+      var endTime = await chooseDateAndTime(context,
+          fieldLableText: "Choose break end time",
+          firstDateTime: startTime,
+          initialDateTime: startTime,
+          lastDateTime: widget.plan.endTime);
       if (endTime == null) return;
       newBreak = PlanBreak(startTime, endTime);
     } else {
-      var startTime = await showTimePicker(
-          context: context, initialTime: widget.plan.startTime.toTimeOfDay());
-      var endTime = await showTimePicker(
-          context: context, initialTime: widget.plan.endTime.toTimeOfDay());
+      var startTime = await chooseTime(context, widget.plan.startTime,
+          fieldLabelText: "Choose break start time");
+      var endTime = await chooseTime(context, widget.plan.endTime,
+          fieldLabelText: "Choose break end time");
       if (startTime == null || endTime == null) return;
-      var startTmiTime =
-          DateTime(st.year, st.month, st.day, startTime.hour, startTime.minute);
-      var endTmiTime =
-          DateTime(et.year, et.month, et.day, endTime.hour, endTime.minute);
-      var finalSt = TmiDateTime(startTmiTime.millisecondsSinceEpoch);
-      var finalEt = TmiDateTime(endTmiTime.millisecondsSinceEpoch);
-      newBreak = PlanBreak(finalSt, finalEt);
+      newBreak = PlanBreak(startTime, endTime);
     }
     var error = PlanBreak.validateBreakTimingsWithPlan(widget.plan, newBreak);
     if (error != null) {
@@ -428,11 +471,26 @@ class _PlanBreaksState extends State<PlanBreaks> {
     setState(() {});
   }
 
-  void breakOptionSelected(String value) {
-    if (value == "Add Break") {
+  void breakOptionSelected(String value) async {
+    if (value == "Custom break") {
       addNewBreakTapped();
-    } else if (value == "Use Pomodoro") {
+    } else if (value == "Use pomodoro") {
+      if (breaks.isNotEmpty) {
+        var proceed = await showShouldProceedDialog(
+            "Use Pomodoro",
+            "Using pomodoro will override the current breaks. Are you sure you want to proceed?",
+            context);
+        if (!proceed) return;
+      }
       applyPomodoro();
+    } else if (value == "Clear all") {
+      if (breaks.isNotEmpty) {
+        var proceed = await showShouldProceedDialog("Confirm",
+            "Are you sure you want to clear all the breaks?", context);
+        if (!proceed) return;
+      }
+      breaks.clear();
+      widget.breaksUpdated(breaks);
     }
   }
 

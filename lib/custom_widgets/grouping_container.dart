@@ -65,7 +65,7 @@ class GroupingContainer extends StatelessWidget {
                             child: CustomText(
                               text: label,
                               size: elevated
-                                  ? 16
+                                  ? 14
                                   : theme.primaryTextSize.toDouble(),
                               align: TextAlign.left,
                               bold: true,

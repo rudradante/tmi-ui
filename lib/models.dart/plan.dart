@@ -70,10 +70,8 @@ class Plan extends BaseTable {
         "",
         "",
         TmiDateTime.now(),
-        TmiDateTime(DateTime.now()
-                .add(const Duration(hours: 1))
-                .millisecondsSinceEpoch -
-            DateTime.now().timeZoneOffset.inMilliseconds),
+        TmiDateTime(
+            TmiDateTime.now().getMillisecondsSinceEpoch() + 3600 * 1000),
         TmiDateTime.now().getMillisecondsSinceEpoch().toString(),
         LoginUser.currentLoginUser.userId,
         [],
@@ -93,12 +91,11 @@ class Plan extends BaseTable {
       'planId': planId,
       'userId': userId,
       'planReferences': planReferences,
-      'breaks': breaks.map((e) => e.toJson()).toList()
+      'breaks': breaks
     };
   }
 
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
-    print(plan.startTime.getMillisecondsSinceEpoch().toString());
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       try {
@@ -124,6 +121,7 @@ class Plan extends BaseTable {
 
   static Future<List<Plan>> getAllPlans(
       TmiDateTime dateTime, BuildContext context) async {
+    print(dateTime.getMillisecondsSinceEpoch());
     var response = await Server.get(
         '/plan/date/${dateTime.getMillisecondsSinceEpoch()}', {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
