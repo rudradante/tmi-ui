@@ -510,7 +510,7 @@ class AddOrUpdatePlanRoute {
         MaterialPageRoute(
             builder: (context) => CustomScaffold(
                   title: "Let's add a plan",
-                  appBarTitleSize: 40,
+                  appBarTitleSize: 32,
                   scaffoldBackgroundColor: HexColor.fromHex(
                       ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
                   centerWidget: AddOrUpdatePlan(plan, onNewPlanAdded),
