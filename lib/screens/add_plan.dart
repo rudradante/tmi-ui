@@ -237,7 +237,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
             Navigator.pop(context);
           }),
     );
-
     setState(() {});
   }
 
@@ -249,6 +248,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           context);
       if (!proceed) return;
       await addWebLink(locationHintText: "File location");
+      return;
     }
     var file = await FilePicker.platform.pickFiles();
     if (file == null) {
