@@ -1,4 +1,6 @@
 import 'dart:io' as SystemStorage;
+import 'package:android_intent_plus/android_intent.dart';
+import 'package:android_intent_plus/flag.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -105,6 +107,18 @@ class AppFile {
           "Unsupported feature",
           "Opening local files is not supported in web version. Please download desktop/app to open local references",
           context);
+      return;
+    }
+
+    if (SystemStorage.Platform.isAndroid) {
+      await AndroidIntent(
+        action:
+            'action_view', // follow exact case i.e. no upper case else it will throw exception
+        data: path,
+        flags: [
+          Flag.FLAG_GRANT_READ_URI_PERMISSION
+        ], // Read permission necessary for content url
+      ).launch();
       return;
     }
     if (readAsString(path) != null) {
