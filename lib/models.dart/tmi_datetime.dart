@@ -15,19 +15,16 @@ class TmiDateTime {
     return TmiDateTime(milliseconds);
   }
 
-  int getMillisecondsSinceEpoch() =>
-      toDateTime(applyTimeZoneOffset: false).millisecondsSinceEpoch;
+  int getMillisecondsSinceEpoch() => _millisecondsSinceEpoch;
 
   TimeOfDay toTimeOfDay() {
     var dateTime = toDateTime();
     return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }
 
-  DateTime toDateTime({bool applyTimeZoneOffset = true}) =>
-      DateTime.fromMillisecondsSinceEpoch(
-          _millisecondsSinceEpoch +
-              (applyTimeZoneOffset ? timeZoneOffsetMs : 0),
-          isUtc: !applyTimeZoneOffset);
+  DateTime toDateTime() =>
+      DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch, isUtc: true)
+          .add(Duration(milliseconds: timeZoneOffsetMs));
 
   String getTimeDifferenceInDuration(TmiDateTime d2) {
     String result = "";
@@ -49,8 +46,8 @@ class TmiDateTime {
     return result;
   }
 
-  String getDateAsString({bool applyTimeZoneOffset = true}) {
-    DateTime dateTime = toDateTime(applyTimeZoneOffset: applyTimeZoneOffset);
+  String getDateAsString() {
+    DateTime dateTime = toDateTime();
     String result = "";
     String dayStr =
         dateTime.day < 10 ? ("0${dateTime.day}") : dateTime.day.toString();
@@ -61,8 +58,8 @@ class TmiDateTime {
     return result;
   }
 
-  String getTimeAsString({bool applyTimeZoneOffset = true}) {
-    DateTime dateTime = toDateTime(applyTimeZoneOffset: applyTimeZoneOffset);
+  String getTimeAsString() {
+    DateTime dateTime = toDateTime();
     String result = "";
     String suffix = "AM";
     int hour = dateTime.hour;
@@ -79,7 +76,13 @@ class TmiDateTime {
   }
 
   static TmiDateTime now() {
-    return TmiDateTime(DateTime.now().millisecondsSinceEpoch -
-        DateTime.now().timeZoneOffset.inMilliseconds);
+    return TmiDateTime(DateTime.now().millisecondsSinceEpoch);
+  }
+
+  static TmiDateTime nowWithMinDate() {
+    var d = DateTime.now();
+    var d2 = DateTime(d.year, d.month, d.day);
+    print(d2.millisecondsSinceEpoch);
+    return TmiDateTime(d2.millisecondsSinceEpoch);
   }
 }

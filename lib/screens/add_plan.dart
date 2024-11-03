@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, unused_import
+import "package:file_picker/file_picker.dart";
 import "package:flutter/material.dart";
 import "package:numberpicker/numberpicker.dart";
 import "package:tmiui/config/config_provider.dart";
@@ -85,13 +86,18 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           GroupingContainer(
               label: "References",
               height: 250,
-              leading: IconButton(
-                  onPressed: addReferenceTapped,
-                  icon: Icon(
-                    Icons.add_circle_rounded,
-                    size: 28 * sf.cf,
-                    color: HexColor.fromHex(theme.primaryThemeForegroundColor),
-                  )),
+              leading: PopupMenuButton<String>(
+                onSelected: addReferenceTapped,
+                itemBuilder: (context) => ["Web link", "Local file"]
+                    .map((e) => PopupMenuItem<String>(
+                          value: e,
+                          child: CustomText(text: e),
+                        ))
+                    .toList(),
+                child: CustomFlatButton(
+                    text: "Add Reference",
+                    color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
+              ),
               subtitle: "Add local or web locations of files",
               elevated: elevatedContainer,
               child: CustomListView(
@@ -203,26 +209,44 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     setState(() {});
   }
 
-  void addReferenceTapped() async {
-    await showDialog(
-      context: context,
-      builder: (context) => CustomForm(
-          isDialog: true,
-          formData: <String, CustomFormData>{
-            "Hyperlink": CustomFormData(initialText: ""),
-            "Title": CustomFormData(initialText: "")
-          },
-          title: "Add Reference",
-          submitText: "Add",
-          onSubmit: (values) {
-            var newReference = PlanReference.newReference(plan.planId);
-            newReference.hyperlink = values['Hyperlink'].toString();
-            newReference.description = values['Title'].toString();
-            plan.planReferences.add(newReference);
-            Navigator.pop(context);
-          }),
-    );
-    setState(() {});
+  void addReferenceTapped(String val) async {
+    if (val == "Web link") {
+      await showDialog(
+        context: context,
+        builder: (context) => CustomForm(
+            isDialog: true,
+            formData: <String, CustomFormData>{
+              "Hyperlink": CustomFormData(initialText: ""),
+              "Title": CustomFormData(initialText: "")
+            },
+            title: "Add Reference",
+            submitText: "Add",
+            onSubmit: (values) {
+              var newReference = PlanReference.newReference(plan.planId);
+              newReference.hyperlink = values['Hyperlink'].toString();
+              newReference.description = values['Title'].toString();
+              plan.planReferences.add(newReference);
+              Navigator.pop(context);
+            }),
+      );
+
+      setState(() {});
+    } else if (val == "Local file") {
+      var file = await FilePicker.platform.pickFiles();
+      print(file == null);
+      if (file == null) {
+        return;
+      }
+      print(file.paths.single == null);
+      print(file.paths.single);
+      var newReference = PlanReference.newReference(plan.planId);
+      newReference.hyperlink = file.files.single.path!;
+      newReference.description = file.files.single.name;
+      plan.planReferences.add(newReference);
+      Navigator.pop(context);
+
+      setState(() {});
+    }
   }
 
   Future chooseStartTimeTapped() async {
@@ -390,10 +414,8 @@ class _PlanBreaksState extends State<PlanBreaks> {
           DateTime(st.year, st.month, st.day, startTime.hour, startTime.minute);
       var endTmiTime =
           DateTime(et.year, et.month, et.day, endTime.hour, endTime.minute);
-      var finalSt = TmiDateTime(startTmiTime.millisecondsSinceEpoch -
-          startTmiTime.timeZoneOffset.inMilliseconds);
-      var finalEt = TmiDateTime(endTmiTime.millisecondsSinceEpoch -
-          endTmiTime.timeZoneOffset.inMilliseconds);
+      var finalSt = TmiDateTime(startTmiTime.millisecondsSinceEpoch);
+      var finalEt = TmiDateTime(endTmiTime.millisecondsSinceEpoch);
       newBreak = PlanBreak(finalSt, finalEt);
     }
     var error = PlanBreak.validateBreakTimingsWithPlan(widget.plan, newBreak);

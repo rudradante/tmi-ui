@@ -18,6 +18,5 @@ Future<TmiDateTime?> chooseDateAndTime(BuildContext context,
   if (time == null) return null;
   DateTime result =
       DateTime(date.year, date.month, date.day, time.hour, time.minute);
-  return TmiDateTime(
-      result.millisecondsSinceEpoch - result.timeZoneOffset.inMilliseconds);
+  return TmiDateTime(result.millisecondsSinceEpoch);
 }

@@ -25,10 +25,4 @@ extension TimeOfDayExtension on TimeOfDay {
   static TimeOfDay fromMillisecondsSinceEpoch(int ms) {
     return TmiDateTime(ms).toTimeOfDay();
   }
-
-  int toMilliSecondsSinceEpoch() {
-    return TmiDateTime.fromTimeOfDay(this)
-        .toDateTime(applyTimeZoneOffset: false)
-        .millisecondsSinceEpoch;
-  }
 }

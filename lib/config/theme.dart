@@ -62,16 +62,15 @@ ScreenFactors calculateScreenFactors(BuildContext context) {
   double cf = 1;
   double width = size.width;
   cf = width / ThemeConfig.referenceScreenWidth;
-  cf /= (width <= 640
+  int maxComponents = (width <= 640
       ? 1
       : width <= 1008
           ? 2
           : width <= 1920
               ? 3
               : 4);
-  int maxComponents =
-      (size.width / (ThemeConfig.referenceScreenWidth * cf)).truncate();
-  if (maxComponents < 1) maxComponents = 1;
+  cf /= (width / maxComponents) / ThemeConfig.referenceScreenWidth;
+  if (cf >= 1.2) cf = 1.2;
   double textSize =
       ConfigProvider.getThemeConfig().primaryTextSize.toDouble() * cf / 1.2;
   return ScreenFactors(size, cf, textSize, maxComponents);

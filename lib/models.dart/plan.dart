@@ -33,11 +33,8 @@ class Plan extends BaseTable {
       this.planNotes)
       : super(createdBy, updatedBy, createdOn, updatedOn) {
     breaks.sort((a, b) => a.startTime
-        .toDateTime(applyTimeZoneOffset: false)
-        .millisecondsSinceEpoch
-        .compareTo(b.startTime
-            .toDateTime(applyTimeZoneOffset: false)
-            .millisecondsSinceEpoch));
+        .getMillisecondsSinceEpoch()
+        .compareTo(b.startTime.getMillisecondsSinceEpoch()));
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
@@ -101,6 +98,7 @@ class Plan extends BaseTable {
   }
 
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
+    print(plan.startTime.getMillisecondsSinceEpoch().toString());
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       try {
@@ -116,7 +114,7 @@ class Plan extends BaseTable {
     var response = await Server.update('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       try {
-        return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
+        return plan;
       } catch (err) {
         print(err);
       }
@@ -126,22 +124,17 @@ class Plan extends BaseTable {
 
   static Future<List<Plan>> getAllPlans(
       TmiDateTime dateTime, BuildContext context) async {
-    var response = await Server.get('/plan',
-        {"date": dateTime.getMillisecondsSinceEpoch().toString()}, context);
+    var response = await Server.get(
+        '/plan/date/${dateTime.getMillisecondsSinceEpoch()}', {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       var responseJson = jsonDecode(response.body);
-      print(responseJson);
       try {
         var results = (responseJson as List<dynamic>)
             .map((e) => Plan.fromJson(e))
             .toList();
         results.sort((a, b) => a.startTime
-            .toDateTime(applyTimeZoneOffset: false)
-            .millisecondsSinceEpoch
-            .compareTo(b.endTime
-                .toDateTime(applyTimeZoneOffset: false)
-                .millisecondsSinceEpoch));
-        print(results.map((e) => e.toJson()));
+            .getMillisecondsSinceEpoch()
+            .compareTo(b.endTime.getMillisecondsSinceEpoch()));
         return results;
       } catch (err) {
         print(err);

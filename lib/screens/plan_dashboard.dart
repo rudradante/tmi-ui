@@ -22,7 +22,7 @@ class PlanDashboard extends StatefulWidget {
 class _PlanDashboardState extends State<PlanDashboard> {
   List<Plan> _plans = [];
   Plan selectedPlan = Plan.newPlan();
-  TmiDateTime selectedDate = TmiDateTime.now();
+  TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
   Key selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
 
   @override
@@ -63,7 +63,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
                         fontSize: 40,
                         color: HexColor.fromHex(theme.appBarForegroundColor)))),
           ),
-        MyPlanDateSelector(selectedDateChanged, selectedDate)
+        MyPlanDateSelector(key: UniqueKey(), selectedDateChanged, selectedDate)
       ],
       centerWidget: sf.maxComponents <= 2
           ? SizedBox.fromSize(
@@ -127,6 +127,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
   }
 
   void selectedDateChanged(TmiDateTime selectedDate) {
+    this.selectedDate = selectedDate;
     refreshPlans();
   }
 
@@ -181,20 +182,16 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   }
 
   void previousDateTapped() {
-    selectedDate = TmiDateTime(selectedDate
-        .toDateTime()
-        .subtract(const Duration(days: 1))
-        .millisecondsSinceEpoch);
-    setState(() {});
+    selectedDate = TmiDateTime(
+        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() -
+            24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void nextDateTapped() {
-    selectedDate = TmiDateTime(selectedDate
-        .toDateTime()
-        .add(const Duration(days: 1))
-        .millisecondsSinceEpoch);
-    setState(() {});
+    selectedDate = TmiDateTime(
+        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() +
+            24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
@@ -205,8 +202,8 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
         firstDate: DateTime(DateTime.now().year - 1),
         lastDate: DateTime(DateTime.now().year + 5));
     if (selected == null) return;
+    selected = DateTime(selected.year, selected.month, selected.day);
     selectedDate = TmiDateTime(selected.millisecondsSinceEpoch);
-    setState(() {});
     widget.onDateChanged(selectedDate);
   }
 }
