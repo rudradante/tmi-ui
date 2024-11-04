@@ -5,6 +5,7 @@ import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/custom_widgets/custom_row.dart';
 import 'package:tmiui/custom_widgets/custom_scaffold.dart';
 import 'package:tmiui/extensions/color.dart';
+import 'package:tmiui/helpers/date_time.dart';
 import 'package:tmiui/screens/add_plan.dart';
 
 import '../custom_widgets/custom_text.dart';
@@ -147,7 +148,7 @@ class MyPlanDateSelector extends StatefulWidget {
 }
 
 class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
-  TmiDateTime selectedDate = TmiDateTime(DateTime.now().millisecondsSinceEpoch);
+  TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
 
   @override
   void initState() {
@@ -183,28 +184,24 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
 
   void previousDateTapped() {
     selectedDate = TmiDateTime(
-        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() -
-            24 * 3600 * 1000);
+        selectedDate.getMillisecondsSinceEpoch() - 24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void nextDateTapped() {
     selectedDate = TmiDateTime(
-        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() +
-            24 * 3600 * 1000);
+        selectedDate.getMillisecondsSinceEpoch() + 24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void chooseDateTapped() async {
-    var selected = await showDatePicker(
-        context: context,
-        initialDate: selectedDate.toDateTime(),
-        firstDate: DateTime(DateTime.now().year - 1),
-        lastDate: DateTime(DateTime.now().year + 5));
+    var selected = await chooseDate(
+        context,
+        selectedDate,
+        selectedDate.subtract(const Duration(days: 365)),
+        selectedDate.add(const Duration(days: 365)));
     if (selected == null) return;
-    selected = DateTime(selected.year, selected.month, selected.day);
-    selectedDate = TmiDateTime(selected.millisecondsSinceEpoch);
-    widget.onDateChanged(selectedDate);
+    widget.onDateChanged(selected);
   }
 }
 

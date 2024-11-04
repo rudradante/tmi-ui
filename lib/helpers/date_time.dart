@@ -36,7 +36,7 @@ Future<TmiDateTime?> chooseDate(
       context: context,
       fieldHintText: fieldLableText,
       helpText: fieldLableText,
-      barrierLabel: fieldLableText,
+      //barrierLabel: fieldLableText,
       initialDate: initialDateTime.toDateTime(),
       firstDate: firstDateTime.toDateTime(),
       lastDate: lastDateTime.toDateTime());

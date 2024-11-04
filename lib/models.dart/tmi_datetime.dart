@@ -82,7 +82,14 @@ class TmiDateTime {
   static TmiDateTime nowWithMinDate() {
     var d = DateTime.now();
     var d2 = DateTime(d.year, d.month, d.day);
-    print(d2.millisecondsSinceEpoch);
     return TmiDateTime(d2.millisecondsSinceEpoch);
+  }
+
+  TmiDateTime subtract(Duration duration) {
+    return TmiDateTime(this._millisecondsSinceEpoch - duration.inMilliseconds);
+  }
+
+  TmiDateTime add(Duration duration) {
+    return TmiDateTime(this._millisecondsSinceEpoch + duration.inMilliseconds);
   }
 }
