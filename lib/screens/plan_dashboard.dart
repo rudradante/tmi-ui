@@ -147,7 +147,7 @@ class MyPlanDateSelector extends StatefulWidget {
 }
 
 class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
-  TmiDateTime selectedDate = TmiDateTime(DateTime.now().millisecondsSinceEpoch);
+  TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
 
   @override
   void initState() {
@@ -182,20 +182,19 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   }
 
   void previousDateTapped() {
-    selectedDate = TmiDateTime(
-        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() -
+    selectedDate = TmiDateTime(selectedDate.getMillisecondsSinceEpoch() -
             24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void nextDateTapped() {
-    selectedDate = TmiDateTime(
-        TmiDateTime.nowWithMinDate().getMillisecondsSinceEpoch() +
+    selectedDate = TmiDateTime(selectedDate.getMillisecondsSinceEpoch() +
             24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void chooseDateTapped() async {
+    var selected = await chooseDate()
     var selected = await showDatePicker(
         context: context,
         initialDate: selectedDate.toDateTime(),

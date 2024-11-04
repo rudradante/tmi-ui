@@ -109,18 +109,6 @@ class AppFile {
           context);
       return;
     }
-
-    if (SystemStorage.Platform.isAndroid) {
-      await AndroidIntent(
-        action:
-            'action_view', // follow exact case i.e. no upper case else it will throw exception
-        data: path,
-        flags: [
-          Flag.FLAG_GRANT_READ_URI_PERMISSION
-        ], // Read permission necessary for content url
-      ).launch();
-      return;
-    }
     if (readAsString(path) != null) {
       await launchUrlString(path);
     } else {

@@ -32,19 +32,21 @@
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
     <queries>
-  <!-- If your app checks for SMS support -->
-  <intent>
-    <action android:name="android.intent.action.VIEW" />
-    <data android:scheme="sms" />
-  </intent>
-  <!-- If your app checks for call support -->
-  <intent>
-    <action android:name="android.intent.action.VIEW" />
-    <data android:scheme="tel" />
-  </intent>
-  <!-- If your application checks for inAppBrowserView launch mode support -->
-  <intent>
-    <action android:name="android.support.customtabs.action.CustomTabsService" />
-  </intent>
-</queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="content" /> <!--  scheme that file_selector plugin provides the path in -->
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="file" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+    </queries>
 </manifest>
