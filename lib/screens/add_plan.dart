@@ -4,7 +4,6 @@ import "dart:convert";
 import "package:file_picker/file_picker.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
-import "package:numberpicker/numberpicker.dart";
 import "package:tmiui/config/config_provider.dart";
 import "package:tmiui/config/theme.dart";
 import "package:tmiui/custom_widgets/custom_column.dart";
