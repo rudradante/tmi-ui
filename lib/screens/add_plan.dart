@@ -4,7 +4,6 @@ import "dart:convert";
 import "package:file_picker/file_picker.dart";
 import "package:flutter/foundation.dart";
 import "package:flutter/material.dart";
-import "package:numberpicker/numberpicker.dart";
 import "package:tmiui/config/config_provider.dart";
 import "package:tmiui/config/theme.dart";
 import "package:tmiui/custom_widgets/custom_column.dart";
@@ -47,10 +46,12 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   Plan plan = Plan.newPlan();
+  bool isNewPlan = false;
   @override
   void initState() {
     super.initState();
     plan = widget.plan;
+    isNewPlan = int.tryParse(plan.planId) != null;
     _titleController.text = widget.plan.title;
     _descriptionController.text = widget.plan.description;
   }
@@ -107,43 +108,38 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
               elevated: elevatedContainer,
               child: CustomListView(
                   itemBuilder: (context, i) {
-                    return CustomRow(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Tooltip(
-                          preferBelow: true,
-                          message: plan.planReferences[i].hyperlink,
-                          child: InkWell(
-                            onTap: () => referenceTapped(
-                                plan.planReferences[i].hyperlink),
-                            child: CustomText(
-                                align: TextAlign.left,
-                                text: plan.planReferences[i].description,
-                                color: Colors.lightBlue,
-                                underlined: true),
-                          ),
-                        ),
-                        IconButton(
+                    return Tooltip(
+                      preferBelow: true,
+                      message: plan.planReferences[i].hyperlink,
+                      child: ListTile(
+                        onTap: () =>
+                            referenceTapped(plan.planReferences[i].hyperlink),
+                        title: CustomText(
+                            align: TextAlign.left,
+                            text: plan.planReferences[i].description,
+                            color: Colors.lightBlue,
+                            underlined: true),
+                        trailing: IconButton(
                             onPressed: () => deleteReferenceTapped(
                                 plan.planReferences[i].planReferenceId),
                             icon: const Icon(
                               Icons.remove,
                               color: Colors.red,
-                            ))
-                      ],
+                            )),
+                      ),
                     );
                   },
                   itemCount: plan.planReferences.length)),
           GroupingContainer(
               elevated: elevatedContainer,
               label: "Schedule",
-              subtitle: "Choose when you start and end this task",
+              subtitle: "Choose when you start and end this task (Local Time)",
               leading: CustomFlatButton(
                   onTap: () {},
-                  text:
-                      plan.startTime.getTimeDifferenceInDuration(plan.endTime),
+                  text: isNewPlan
+                      ? "[Time Span]"
+                      : plan.startTime
+                          .getTimeDifferenceInDuration(plan.endTime),
                   color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
               child: CustomRow(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -325,7 +321,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     requestPlan.description = _descriptionController.text.trim();
     Plan? result;
     print(jsonEncode(requestPlan));
-    if (int.tryParse(plan.planId) != null) {
+    if (isNewPlan) {
       result = await Plan.createPlan(requestPlan, context);
     } else {
       result = await Plan.updatePlan(requestPlan, context);
@@ -387,7 +383,8 @@ class _PlanBreaksState extends State<PlanBreaks> {
         ),
         elevated: true,
         label: "Breaks",
-        subtitle: "Take breaks to increase efficiency",
+        subtitle:
+            "Take breaks with the planned time to increase efficiency (Local Time)",
         child: CustomColumn(
           mainAxisSize: MainAxisSize.min,
           children: breaks
