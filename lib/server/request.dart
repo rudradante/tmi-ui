@@ -1,12 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
 import '../config/config_provider.dart';
-import '../custom_widgets/custom_dialog.dart';
 import '../custom_widgets/message_dialog.dart';
 import '../custom_widgets/pending_dialog.dart';
 
@@ -49,7 +47,6 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
-      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -90,7 +87,6 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
-      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -127,7 +123,6 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
-      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -164,7 +159,6 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
-      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -225,7 +219,6 @@ class Server {
       }
       return response;
     } catch (e) {
-      print(e);
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }

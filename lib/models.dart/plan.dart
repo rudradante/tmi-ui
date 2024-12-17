@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tmiui/models.dart/base_table.dart';
 import 'package:tmiui/models.dart/login_user.dart';
@@ -98,11 +99,7 @@ class Plan extends BaseTable {
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      try {
-        return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
-      } catch (err) {
-        print(err);
-      }
+      return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
     }
     return null;
   }
@@ -113,7 +110,9 @@ class Plan extends BaseTable {
       try {
         return plan;
       } catch (err) {
-        print(err);
+        if (kDebugMode) {
+          print(err);
+        }
       }
     }
     return null;
@@ -121,22 +120,16 @@ class Plan extends BaseTable {
 
   static Future<List<Plan>> getAllPlans(
       TmiDateTime dateTime, BuildContext context) async {
-    print(dateTime.getMillisecondsSinceEpoch());
     var response = await Server.get(
         '/plan/date/${dateTime.getMillisecondsSinceEpoch()}', {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       var responseJson = jsonDecode(response.body);
-      try {
-        var results = (responseJson as List<dynamic>)
-            .map((e) => Plan.fromJson(e))
-            .toList();
-        results.sort((a, b) => a.startTime
-            .getMillisecondsSinceEpoch()
-            .compareTo(b.endTime.getMillisecondsSinceEpoch()));
-        return results;
-      } catch (err) {
-        print(err);
-      }
+      var results =
+          (responseJson as List<dynamic>).map((e) => Plan.fromJson(e)).toList();
+      results.sort((a, b) => a.startTime
+          .getMillisecondsSinceEpoch()
+          .compareTo(b.endTime.getMillisecondsSinceEpoch()));
+      return results;
     }
     return [];
   }
@@ -145,4 +138,6 @@ class Plan extends BaseTable {
     var response = await Server.delete('/plan/$planId', {}, context);
     return Server.isSuccessHttpCode(response.statusCode);
   }
+
+  bool isNewPlan() => int.tryParse(planId) != null;
 }

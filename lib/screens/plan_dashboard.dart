@@ -7,6 +7,7 @@ import 'package:tmiui/custom_widgets/custom_scaffold.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/helpers/date_time.dart';
 import 'package:tmiui/screens/add_plan.dart';
+import 'package:tmiui/screens/schedule.dart';
 
 import '../custom_widgets/custom_text.dart';
 import '../models.dart/plan.dart';
@@ -14,7 +15,8 @@ import '../models.dart/tmi_datetime.dart';
 import 'my_plans.dart';
 
 class PlanDashboard extends StatefulWidget {
-  const PlanDashboard({Key? key}) : super(key: key);
+  final Plan? selectedPlan;
+  const PlanDashboard(this.selectedPlan, {Key? key}) : super(key: key);
 
   @override
   State<PlanDashboard> createState() => _PlanDashboardState();
@@ -29,9 +31,13 @@ class _PlanDashboardState extends State<PlanDashboard> {
   @override
   void initState() {
     super.initState();
+    if (widget.selectedPlan != null) {
+      selectedDate = widget.selectedPlan!.startTime.toMinDate();
+      selectedPlan = widget.selectedPlan!;
+    }
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      refreshPlans();
+      refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
     });
   }
 
@@ -44,6 +50,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
       title: sf.maxComponents <= 2 ? "My Plans" : "Let's add a plan",
       appBarTitleSize: 32,
       floatingActionButton: FloatingActionButton(
+        tooltip: "Add new plan",
         shape: const CircleBorder(),
         onPressed: addNewPlanTapped,
         elevation: 8,
@@ -89,6 +96,37 @@ class _PlanDashboardState extends State<PlanDashboard> {
                 )
               ],
             ),
+      bottomAppBar: BottomAppBar(
+        padding: const EdgeInsets.symmetric(horizontal: 10),
+        height: 60,
+        color: Colors.white,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 5,
+        child: Row(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            TextButton.icon(
+                style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.white)),
+                onPressed: scheduleTapped,
+                icon: const Icon(
+                  Icons.schedule,
+                  color: Colors.black,
+                ),
+                label: const CustomText(text: "Schedule")),
+            TextButton.icon(
+                style: ButtonStyle(
+                    backgroundColor: MaterialStateProperty.all(Colors.white)),
+                onPressed: scheduleTapped,
+                icon: const Icon(
+                  Icons.account_box,
+                  color: Colors.black,
+                ),
+                label: const CustomText(text: "My Account"))
+          ],
+        ),
+      ),
     );
   }
 
@@ -108,11 +146,15 @@ class _PlanDashboardState extends State<PlanDashboard> {
     refreshPlans();
   }
 
-  void refreshPlans() async {
+  void refreshPlans({bool preserveSelectedPlan = false}) async {
     _plans = await Plan.getAllPlans(selectedDate, context);
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     selectedPlan = Plan.newPlan();
-    setState(() {});
+    if (preserveSelectedPlan) {
+      planSelected(widget.selectedPlan!);
+    } else {
+      setState(() {});
+    }
   }
 
   planSelected(Plan selectedPlan) {
@@ -133,6 +175,11 @@ class _PlanDashboardState extends State<PlanDashboard> {
   }
 
   planDeleted(String p1) {
+    refreshPlans();
+  }
+
+  void scheduleTapped() async {
+    await SchedulePlansRoute.push(context, [], (p0) {});
     refreshPlans();
   }
 }
@@ -206,10 +253,10 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
 }
 
 class PlanDashboardRoute {
-  static void push(BuildContext context) {
+  static void push(BuildContext context, {Plan? selectedPlan}) {
     Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (context) => const PlanDashboard()),
+        MaterialPageRoute(builder: (context) => PlanDashboard(selectedPlan)),
         (route) => false);
   }
 }

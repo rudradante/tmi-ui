@@ -1,5 +1,5 @@
 name: tmiui
-description: A new Flutter project.
+description: A Time Management App with AI.
 
 version: 1.0.0+1
 
@@ -16,6 +16,7 @@ dependencies:
   file_picker: 8.0.5
   universal_html: ^2.2.4
   path_provider: ^2.1.4
+  syncfusion_flutter_calendar: ^27.2.4
 
 dev_dependencies:
   flutter_test:

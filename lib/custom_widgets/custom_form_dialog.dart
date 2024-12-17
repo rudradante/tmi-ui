@@ -44,18 +44,18 @@ class CustomForm extends StatefulWidget {
       : super(key: key);
 
   @override
-  _CustomFormState createState() => _CustomFormState();
+  CustomFormState createState() => CustomFormState();
 }
 
-class _CustomFormState extends State<CustomForm> {
+class CustomFormState extends State<CustomForm> {
   Map<String, TextEditingController> controllers = {};
   @override
   void initState() {
     super.initState();
-    widget.formData.keys.forEach((key) {
+    for (var key in widget.formData.keys) {
       controllers.putIfAbsent(key,
           () => TextEditingController(text: widget.formData[key]?.initialText));
-    });
+    }
   }
 
   @override

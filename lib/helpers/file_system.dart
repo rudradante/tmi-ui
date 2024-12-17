@@ -1,5 +1,7 @@
+// ignore_for_file: library_prefixes
+
 import 'dart:io' as SystemStorage;
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tmiui/custom_widgets/message_dialog.dart';
@@ -36,32 +38,27 @@ class AppFile {
       }
       return content;
     } catch (err) {
-      print(err);
       return null;
     }
   }
 
   static List<String> listFiles(String rootDir) {
     List<String> files = [];
-    try {
-      if (kIsWeb) {
-        files = window.localStorage.keys
-            .where((element) => element.substring(0, rootDir.length) == rootDir)
-            .toList();
-      } else {
-        SystemStorage.Directory directory =
-            SystemStorage.Directory("$appDirectory/$rootDir");
-        if (!directory.existsSync()) directory.createSync();
-        List<SystemStorage.FileSystemEntity> fileEntities = [];
-        for (var item in directory.listSync()) {
-          if (item.statSync().type == SystemStorage.FileSystemEntityType.file) {
-            fileEntities.add(item);
-          }
+    if (kIsWeb) {
+      files = window.localStorage.keys
+          .where((element) => element.substring(0, rootDir.length) == rootDir)
+          .toList();
+    } else {
+      SystemStorage.Directory directory =
+          SystemStorage.Directory("$appDirectory/$rootDir");
+      if (!directory.existsSync()) directory.createSync();
+      List<SystemStorage.FileSystemEntity> fileEntities = [];
+      for (var item in directory.listSync()) {
+        if (item.statSync().type == SystemStorage.FileSystemEntityType.file) {
+          fileEntities.add(item);
         }
-        files = fileEntities.map((e) => e.path).toList();
       }
-    } catch (err) {
-      print(err);
+      files = fileEntities.map((e) => e.path).toList();
     }
     return files;
   }
@@ -79,7 +76,6 @@ class AppFile {
       file.writeAsStringSync(content);
       return true;
     } catch (err) {
-      print(err);
       return false;
     }
   }
@@ -94,7 +90,6 @@ class AppFile {
       file.deleteSync();
       return true;
     } catch (err) {
-      print(err);
       return false;
     }
   }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/custom_widgets/custom_column.dart';
+import 'package:tmiui/custom_widgets/should_proceed_dialog.dart';
 import 'package:tmiui/custom_widgets/text_field.dart';
 import 'package:tmiui/models.dart/plan_note.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
@@ -31,7 +31,6 @@ class _MyPlanCardState extends State<MyPlanCard> {
   @override
   Widget build(BuildContext context) {
     Color foreGroundColor = widget.isSelected ? Colors.black : Colors.white;
-    var theme = ConfigProvider.getThemeConfig();
     var sf = calculateScreenFactors(context);
     return InkWell(
       onTap:
@@ -92,8 +91,8 @@ class _MyPlanCardState extends State<MyPlanCard> {
                     )
                   ]),
               collapsed
-                  ? SizedBox()
-                  : Padding(
+                  ? const SizedBox()
+                  : const Padding(
                       padding: EdgeInsets.all(16), child: Divider(height: 0.5)),
               collapsed
                   ? const SizedBox()
@@ -152,6 +151,9 @@ class _MyPlanCardState extends State<MyPlanCard> {
 
   void optionSelected(String value, String id) async {
     if (value == "Delete") {
+      var proceed = await showShouldProceedDialog(
+          "Delete", "Are you sure you want to remove this plan?", context);
+      if (!proceed) return;
       var result = await Plan.deletePlan(id, context);
       if (result) {
         widget.onPlanDeleted(id);

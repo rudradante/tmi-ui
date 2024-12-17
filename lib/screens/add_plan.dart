@@ -33,10 +33,17 @@ import "../helpers/date_time.dart";
 import "../models.dart/plan_break.dart";
 
 class AddOrUpdatePlan extends StatefulWidget {
-  const AddOrUpdatePlan(this.plan, this.newPlanAdded, {Key? key})
+  const AddOrUpdatePlan(this.plan, this.newPlanAdded,
+      {Key? key,
+      this.fullyEditable = true,
+      this.notEditable = false,
+      this.onlyTimeEditable = false})
       : super(key: key);
   final void Function(Plan) newPlanAdded;
   final Plan plan;
+  final bool fullyEditable;
+  final bool notEditable;
+  final bool onlyTimeEditable;
 
   @override
   State<AddOrUpdatePlan> createState() => _AddOrUpdatePlanState();
@@ -51,7 +58,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   void initState() {
     super.initState();
     plan = widget.plan;
-    isNewPlan = int.tryParse(plan.planId) != null;
+    isNewPlan = plan.isNewPlan();
     _titleController.text = widget.plan.title;
     _descriptionController.text = widget.plan.description;
   }
@@ -76,6 +83,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   CustomTextField(
+                    readOnly: widget.notEditable || widget.onlyTimeEditable,
                     controller: _titleController,
                     hintText: "Title",
                   ),
@@ -83,6 +91,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                     height: 8,
                   ),
                   CustomTextField(
+                    readOnly: widget.notEditable || widget.onlyTimeEditable,
                     controller: _descriptionController,
                     maxLines: 10,
                     hintText: "Add any other notes or description for the task",
@@ -92,18 +101,21 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           GroupingContainer(
               label: "References",
               height: 250,
-              leading: PopupMenuButton<String>(
-                onSelected: addReferenceTapped,
-                itemBuilder: (context) => ["Web link", "Local file"]
-                    .map((e) => PopupMenuItem<String>(
-                          value: e,
-                          child: CustomText(text: e),
-                        ))
-                    .toList(),
-                child: CustomFlatButton(
-                    text: "Add",
-                    color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
-              ),
+              leading: widget.notEditable || widget.onlyTimeEditable
+                  ? const SizedBox()
+                  : PopupMenuButton<String>(
+                      onSelected: addReferenceTapped,
+                      itemBuilder: (context) => ["Web link", "Local file"]
+                          .map((e) => PopupMenuItem<String>(
+                                value: e,
+                                child: CustomText(text: e),
+                              ))
+                          .toList(),
+                      child: CustomFlatButton(
+                          text: "Add",
+                          color: HexColor.fromHex(
+                              theme.primaryThemeForegroundColor)),
+                    ),
               subtitle: "Add local or web locations of files",
               elevated: elevatedContainer,
               child: CustomListView(
@@ -119,13 +131,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                             text: plan.planReferences[i].description,
                             color: Colors.lightBlue,
                             underlined: true),
-                        trailing: IconButton(
-                            onPressed: () => deleteReferenceTapped(
-                                plan.planReferences[i].planReferenceId),
-                            icon: const Icon(
-                              Icons.remove,
-                              color: Colors.red,
-                            )),
+                        trailing: widget.notEditable || widget.onlyTimeEditable
+                            ? const SizedBox()
+                            : IconButton(
+                                onPressed: () => deleteReferenceTapped(
+                                    plan.planReferences[i].planReferenceId),
+                                icon: const Icon(
+                                  Icons.remove,
+                                  color: Colors.red,
+                                )),
                       ),
                     );
                   },
@@ -153,7 +167,9 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                       ),
                       CustomFlatButton(
                           isOutlined: true,
-                          onTap: chooseStartTimeTapped,
+                          onTap: widget.notEditable
+                              ? () {}
+                              : chooseStartTimeTapped,
                           text:
                               "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
                           color: HexColor.fromHex(
@@ -169,7 +185,8 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                       ),
                       CustomFlatButton(
                           isOutlined: true,
-                          onTap: chooseEndTimeTapped,
+                          onTap:
+                              widget.notEditable ? () {} : chooseEndTimeTapped,
                           text:
                               "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
                           color: HexColor.fromHex(
@@ -179,6 +196,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                 ],
               )),
           PlanBreaks(
+            isEditable: !widget.notEditable,
             key: UniqueKey(),
             breaksUpdated: (breaks) => setState(() {
               breaks.sort((a, b) => a.startTime
@@ -188,19 +206,21 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
             }),
             plan: plan,
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CustomRow(mainAxisSize: MainAxisSize.max, children: [
-              Expanded(
-                child: CustomFlatButton(
-                  elevated: true,
-                  onTap: saveButtonTapped,
-                  color: HexColor.fromHex(theme.primaryButtonColor),
-                  text: "Save",
-                ),
-              ),
-            ]),
-          )
+          widget.notEditable
+              ? const SizedBox()
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomRow(mainAxisSize: MainAxisSize.max, children: [
+                    Expanded(
+                      child: CustomFlatButton(
+                        elevated: true,
+                        onTap: saveButtonTapped,
+                        color: HexColor.fromHex(theme.primaryButtonColor),
+                        text: "Save",
+                      ),
+                    ),
+                  ]),
+                )
         ],
       ),
     );
@@ -320,7 +340,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();
     Plan? result;
-    print(jsonEncode(requestPlan));
     if (isNewPlan) {
       result = await Plan.createPlan(requestPlan, context);
     } else {
@@ -345,8 +364,13 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
 
 class PlanBreaks extends StatefulWidget {
   final Plan plan;
+  final bool isEditable;
   final Function(List<PlanBreak>) breaksUpdated;
-  const PlanBreaks({Key? key, required this.plan, required this.breaksUpdated})
+  const PlanBreaks(
+      {Key? key,
+      required this.plan,
+      required this.breaksUpdated,
+      required this.isEditable})
       : super(key: key);
 
   @override
@@ -368,19 +392,21 @@ class _PlanBreaksState extends State<PlanBreaks> {
         .getMillisecondsSinceEpoch()
         .compareTo(b.startTime.getMillisecondsSinceEpoch()));
     return GroupingContainer(
-        leading: PopupMenuButton<String>(
-          onSelected: breakOptionSelected,
-          itemBuilder: (context) =>
-              ["Use pomodoro", "Custom break", "Clear all"]
-                  .map((e) => PopupMenuItem<String>(
-                        value: e,
-                        child: CustomText(text: e),
-                      ))
-                  .toList(),
-          child: CustomFlatButton(
-              text: "Manage",
-              color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
-        ),
+        leading: !widget.isEditable
+            ? const SizedBox()
+            : PopupMenuButton<String>(
+                onSelected: breakOptionSelected,
+                itemBuilder: (context) =>
+                    ["Use pomodoro", "Custom break", "Clear all"]
+                        .map((e) => PopupMenuItem<String>(
+                              value: e,
+                              child: CustomText(text: e),
+                            ))
+                        .toList(),
+                child: CustomFlatButton(
+                    text: "Manage",
+                    color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
+              ),
         elevated: true,
         label: "Breaks",
         subtitle:
@@ -408,9 +434,11 @@ class _PlanBreaksState extends State<PlanBreaks> {
                           ],
                         ),
                       ),
-                      IconButton(
-                          onPressed: () => removeBreakTapped(e),
-                          icon: const Icon(Icons.remove, color: Colors.red))
+                      !widget.isEditable
+                          ? const SizedBox()
+                          : IconButton(
+                              onPressed: () => removeBreakTapped(e),
+                              icon: const Icon(Icons.remove, color: Colors.red))
                     ],
                   ))
               .toList(),
@@ -501,16 +529,27 @@ class _PlanBreaksState extends State<PlanBreaks> {
 
 class AddOrUpdatePlanRoute {
   static void push(
-      BuildContext context, Plan plan, void Function(Plan) onNewPlanAdded) {
+      BuildContext context, Plan plan, void Function(Plan) onNewPlanAdded,
+      {bool fullyEditable = true,
+      bool notEditable = false,
+      bool onlyTimeEditable = false,
+      String? title}) {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (context) => CustomScaffold(
-                  title: "Let's add a plan",
+                  title: title ??
+                      (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
                   appBarTitleSize: 32,
                   scaffoldBackgroundColor: HexColor.fromHex(
                       ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
-                  centerWidget: AddOrUpdatePlan(plan, onNewPlanAdded),
+                  centerWidget: AddOrUpdatePlan(
+                    plan,
+                    onNewPlanAdded,
+                    fullyEditable: fullyEditable,
+                    notEditable: notEditable,
+                    onlyTimeEditable: onlyTimeEditable,
+                  ),
                 )));
   }
 }

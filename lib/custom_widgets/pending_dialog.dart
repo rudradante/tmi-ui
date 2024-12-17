@@ -9,10 +9,10 @@ class PendingDialog extends StatefulWidget {
   const PendingDialog({Key? key, required this.title, this.image = true})
       : super(key: key);
   @override
-  _PendingDialogState createState() => _PendingDialogState();
+  PendingDialogState createState() => PendingDialogState();
 }
 
-class _PendingDialogState extends State<PendingDialog> {
+class PendingDialogState extends State<PendingDialog> {
   @override
   Widget build(BuildContext context) {
     ScreenFactors sf = calculateScreenFactors(context);
