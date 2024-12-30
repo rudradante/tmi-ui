@@ -7,6 +7,7 @@ import "package:flutter/material.dart";
 import "package:tmiui/config/config_provider.dart";
 import "package:tmiui/config/theme.dart";
 import "package:tmiui/custom_widgets/custom_column.dart";
+import "package:tmiui/custom_widgets/custom_dialog.dart";
 import "package:tmiui/custom_widgets/custom_flat_button.dart";
 import "package:tmiui/custom_widgets/custom_list_view.dart";
 import "package:tmiui/custom_widgets/custom_snackbar.dart";
@@ -37,13 +38,15 @@ class AddOrUpdatePlan extends StatefulWidget {
       {Key? key,
       this.fullyEditable = true,
       this.notEditable = false,
-      this.onlyTimeEditable = false})
+      this.onlyTimeEditable = false,
+      this.elevatedContainer = true})
       : super(key: key);
   final void Function(Plan) newPlanAdded;
   final Plan plan;
   final bool fullyEditable;
   final bool notEditable;
   final bool onlyTimeEditable;
+  final bool elevatedContainer;
 
   @override
   State<AddOrUpdatePlan> createState() => _AddOrUpdatePlanState();
@@ -67,7 +70,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   Widget build(BuildContext context) {
     var sf = calculateScreenFactors(context);
     var theme = ConfigProvider.getThemeConfig();
-    var elevatedContainer = true;
+    var elevatedContainer = widget.elevatedContainer;
     return SizedBox(
       width: 400 * sf.cf,
       child: CustomColumn(
@@ -149,6 +152,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
               label: "Schedule",
               subtitle: "Choose when you start and end this task (Local Time)",
               leading: CustomFlatButton(
+                  isOutlined: widget.notEditable,
                   onTap: () {},
                   text: isNewPlan
                       ? "[Time Span]"
@@ -158,44 +162,54 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
               child: CustomRow(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CustomColumn(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const CustomText(text: "Starts from"),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      CustomFlatButton(
-                          isOutlined: true,
-                          onTap: widget.notEditable
-                              ? () {}
-                              : chooseStartTimeTapped,
-                          text:
-                              "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
-                          color: HexColor.fromHex(
-                              theme.primaryThemeForegroundColor))
-                    ],
+                  Expanded(
+                    child: CustomColumn(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const CustomText(text: "Starts from"),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        CustomFlatButton(
+                            isOutlined: true,
+                            onTap: widget.notEditable
+                                ? () {}
+                                : chooseStartTimeTapped,
+                            text:
+                                "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
+                            color: widget.notEditable
+                                ? Colors.grey
+                                : HexColor.fromHex(
+                                    theme.primaryThemeForegroundColor))
+                      ],
+                    ),
                   ),
-                  CustomColumn(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const CustomText(text: "Ends at"),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      CustomFlatButton(
-                          isOutlined: true,
-                          onTap:
-                              widget.notEditable ? () {} : chooseEndTimeTapped,
-                          text:
-                              "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
-                          color: HexColor.fromHex(
-                              theme.primaryThemeForegroundColor))
-                    ],
+                  Expanded(
+                    child: CustomColumn(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const CustomText(text: "Ends at"),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        CustomFlatButton(
+                            isOutlined: true,
+                            onTap: widget.notEditable
+                                ? () {}
+                                : chooseEndTimeTapped,
+                            text:
+                                "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
+                            color: widget.notEditable
+                                ? Colors.grey
+                                : HexColor.fromHex(
+                                    theme.primaryThemeForegroundColor))
+                      ],
+                    ),
                   )
                 ],
               )),
           PlanBreaks(
+            elevatedContainer: widget.elevatedContainer,
             isEditable: !widget.notEditable,
             key: UniqueKey(),
             breaksUpdated: (breaks) => setState(() {
@@ -336,6 +350,14 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           "Start time of the plan cannot be ahead of end time", context);
       return;
     }
+    if (plan.endTime
+            .getMillisecondsSinceEpoch()
+            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
+        0) {
+      await showMessageDialog(
+          "Invalid time", "Plan cannot be set in past", context);
+      return;
+    }
     var requestPlan = plan;
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();
@@ -347,9 +369,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     }
     if (result == null) return;
     plan = result;
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
     widget.newPlanAdded(plan);
   }
 
@@ -366,11 +385,13 @@ class PlanBreaks extends StatefulWidget {
   final Plan plan;
   final bool isEditable;
   final Function(List<PlanBreak>) breaksUpdated;
+  final bool elevatedContainer;
   const PlanBreaks(
       {Key? key,
       required this.plan,
       required this.breaksUpdated,
-      required this.isEditable})
+      required this.isEditable,
+      this.elevatedContainer = true})
       : super(key: key);
 
   @override
@@ -407,7 +428,7 @@ class _PlanBreaksState extends State<PlanBreaks> {
                     text: "Manage",
                     color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
               ),
-        elevated: true,
+        elevated: widget.elevatedContainer,
         label: "Breaks",
         subtitle:
             "Take breaks with the planned time to increase efficiency (Local Time)",
@@ -423,14 +444,18 @@ class _PlanBreaksState extends State<PlanBreaks> {
                             CustomFlatButton(
                                 text: e.startTime.getTimeAsString(),
                                 isOutlined: true,
-                                color: Colors.green),
+                                color: widget.isEditable
+                                    ? Colors.green
+                                    : Colors.grey),
                             CustomText(
                                 text: e.startTime
                                     .getTimeDifferenceInDuration(e.endTime)),
                             CustomFlatButton(
                                 isOutlined: true,
                                 text: e.endTime.getTimeAsString(),
-                                color: Colors.green),
+                                color: widget.isEditable
+                                    ? Colors.green
+                                    : Colors.grey),
                           ],
                         ),
                       ),
@@ -533,23 +558,40 @@ class AddOrUpdatePlanRoute {
       {bool fullyEditable = true,
       bool notEditable = false,
       bool onlyTimeEditable = false,
+      bool forceDialog = false,
       String? title}) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => CustomScaffold(
-                  title: title ??
-                      (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
-                  appBarTitleSize: 32,
-                  scaffoldBackgroundColor: HexColor.fromHex(
-                      ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
-                  centerWidget: AddOrUpdatePlan(
-                    plan,
-                    onNewPlanAdded,
-                    fullyEditable: fullyEditable,
-                    notEditable: notEditable,
-                    onlyTimeEditable: onlyTimeEditable,
-                  ),
-                )));
+    var sf = calculateScreenFactors(context);
+    if (sf.maxComponents > 2 && forceDialog) {
+      showCustomDialog(
+          title ?? (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+          AddOrUpdatePlan(
+            plan,
+            onNewPlanAdded,
+            fullyEditable: fullyEditable,
+            notEditable: notEditable,
+            onlyTimeEditable: onlyTimeEditable,
+            elevatedContainer: false,
+          ),
+          context);
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CustomScaffold(
+                    title: title ??
+                        (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+                    appBarTitleSize: 32,
+                    scaffoldBackgroundColor: HexColor.fromHex(
+                        ConfigProvider.getThemeConfig()
+                            .scaffoldBackgroundColor),
+                    centerWidget: AddOrUpdatePlan(
+                      plan,
+                      onNewPlanAdded,
+                      fullyEditable: fullyEditable,
+                      notEditable: notEditable,
+                      onlyTimeEditable: onlyTimeEditable,
+                    ),
+                  )));
+    }
   }
 }

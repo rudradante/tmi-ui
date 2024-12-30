@@ -16,8 +16,9 @@ class MyPlanCard extends StatefulWidget {
   final bool isSelected;
   final Function(Plan) onPlanSelected;
   final Function(String) onPlanDeleted;
-  const MyPlanCard(
-      this.plan, this.onPlanSelected, this.onPlanDeleted, this.isSelected,
+  final bool readonly;
+  const MyPlanCard(this.plan, this.onPlanSelected, this.onPlanDeleted,
+      this.isSelected, this.readonly,
       {Key? key})
       : super(key: key);
 
@@ -35,7 +36,7 @@ class _MyPlanCardState extends State<MyPlanCard> {
     return InkWell(
       onTap:
           widget.isSelected ? null : () => widget.onPlanSelected(widget.plan),
-      child: AnimatedContainer(
+      child: Container(
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
@@ -43,7 +44,6 @@ class _MyPlanCardState extends State<MyPlanCard> {
                 widget.isSelected ? Colors.white : HexColor.fromHex('65506B'),
             borderRadius: BorderRadius.circular(sf.cf * 32),
           ),
-          duration: const Duration(seconds: 1),
           child: CustomColumn(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,43 +52,48 @@ class _MyPlanCardState extends State<MyPlanCard> {
                   mainAxisSize: MainAxisSize.max,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CustomText(
-                      text: widget.plan.title,
-                      color: foreGroundColor,
+                    Expanded(
+                      child: CustomText(
+                        align: TextAlign.left,
+                        text: widget.plan.title,
+                        color: foreGroundColor,
+                      ),
                     ),
-                    CustomRow(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        PopupMenuButton<String>(
-                            icon: Icon(Icons.adaptive.more,
-                                color: foreGroundColor),
-                            onSelected: (val) =>
-                                optionSelected(val, widget.plan.planId),
-                            itemBuilder: (context) => [
-                                  "Delete",
-                                ]
-                                    .map((e) => PopupMenuItem<String>(
-                                          value: e,
-                                          child: CustomText(text: e),
-                                        ))
-                                    .toList()),
-                        collapsed
-                            ? IconButton(
-                                tooltip: "View notes",
-                                padding: const EdgeInsets.all(0),
-                                onPressed: showNotesTapped,
-                                icon: Icon(
-                                  Icons.notes_outlined,
-                                  color: foreGroundColor,
-                                ))
-                            : IconButton(
-                                onPressed: hideNotesTapped,
-                                icon: Icon(
-                                  Icons.arrow_drop_up,
-                                  color: foreGroundColor,
-                                ))
-                      ],
-                    )
+                    widget.readonly
+                        ? const SizedBox()
+                        : CustomRow(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              PopupMenuButton<String>(
+                                  icon: Icon(Icons.adaptive.more,
+                                      color: foreGroundColor),
+                                  onSelected: (val) =>
+                                      optionSelected(val, widget.plan.planId),
+                                  itemBuilder: (context) => [
+                                        "Delete",
+                                      ]
+                                          .map((e) => PopupMenuItem<String>(
+                                                value: e,
+                                                child: CustomText(text: e),
+                                              ))
+                                          .toList()),
+                              collapsed
+                                  ? IconButton(
+                                      tooltip: "View notes",
+                                      padding: const EdgeInsets.all(0),
+                                      onPressed: showNotesTapped,
+                                      icon: Icon(
+                                        Icons.notes_outlined,
+                                        color: foreGroundColor,
+                                      ))
+                                  : IconButton(
+                                      onPressed: hideNotesTapped,
+                                      icon: Icon(
+                                        Icons.arrow_drop_up,
+                                        color: foreGroundColor,
+                                      ))
+                            ],
+                          )
                   ]),
               collapsed
                   ? const SizedBox()

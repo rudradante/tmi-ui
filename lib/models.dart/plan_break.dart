@@ -2,12 +2,15 @@ import 'package:flutter/foundation.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
+int _idCounter = DateTime.now().millisecondsSinceEpoch;
+
 class PlanBreak {
   String id = "";
   final TmiDateTime startTime, endTime;
 
   PlanBreak(this.startTime, this.endTime) {
-    id = UniqueKey().toString();
+    id = (_idCounter++).toString();
+    print(id);
   }
 
   static PlanBreak fromJson(Map<String, dynamic> json) {

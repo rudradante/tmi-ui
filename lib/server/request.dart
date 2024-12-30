@@ -48,6 +48,7 @@ class Server {
         Navigator.pop(context);
       }
       response = Response('Cannot connect to server', 500);
+      print(e);
     }
     await showMessageDialog("Hey There!", response.body, context);
     // if (response.statusCode == 401) {
@@ -87,6 +88,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -123,6 +125,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -159,6 +162,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+      print(e);
       response = Response('Cannot connect to server', 500);
     }
     await showMessageDialog("Hey There!", response.body, context);
@@ -222,6 +226,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+      print(e);
       return Response("Something Went Wrong", 500);
     }
   }

@@ -21,6 +21,12 @@ class SchedulePlans extends StatefulWidget {
 
 class _SchedulePlansState extends State<SchedulePlans> {
   List<Plan> _plans = [];
+  int cardColorIndex = 0;
+  final List<Color> _cardColors = [
+    HexColor.fromHex(ConfigProvider.getThemeConfig().primaryScheduleCardColor),
+    HexColor.fromHex(
+        ConfigProvider.getThemeConfig().secondaryScheduleCardColor),
+  ];
   var selectedView = CalendarView.day;
   var allowedViews = [CalendarView.day, CalendarView.week, CalendarView.month];
   @override
@@ -46,7 +52,6 @@ class _SchedulePlansState extends State<SchedulePlans> {
             key: UniqueKey(),
             allowViewNavigation: true,
             allowDragAndDrop: false,
-            onDragEnd: taskDragged,
             view: selectedView,
             dataSource: MeetingDataSource(_plans),
             showCurrentTimeIndicator: true,
@@ -99,61 +104,62 @@ class _SchedulePlansState extends State<SchedulePlans> {
   Widget appointmentBuilder(BuildContext context,
       CalendarAppointmentDetails calendarAppointmentDetails) {
     final Plan appointment = calendarAppointmentDetails.appointments.first;
-    return Tooltip(
+    var color = appointment.endTime.getMillisecondsSinceEpoch() <
+            TmiDateTime.now().getMillisecondsSinceEpoch()
+        ? HexColor.fromHex(
+            ConfigProvider.getThemeConfig().pastScheduleCardColor)
+        : _cardColors[(cardColorIndex++) % _cardColors.length];
+    return Container(
+      margin: EdgeInsets.zero,
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.all(4),
+      width: calendarAppointmentDetails.bounds.width,
+      height: calendarAppointmentDetails.bounds.height,
+      child: Tooltip(
         message: appointment.title,
         child: InkWell(
           onDoubleTap: () => planDoubleTapped(appointment),
-          child: Container(
-            decoration: BoxDecoration(
-                color: HexColor.fromHex('65506B'),
-                borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.all(4),
-            width: calendarAppointmentDetails.bounds.width,
-            height: calendarAppointmentDetails.bounds.height,
-            child: CustomRow(
-              children: [
-                Expanded(
-                  child: CustomText(
-                    align: TextAlign.left,
-                    text: appointment.title,
-                    color: Colors.white,
-                  ),
+          child: CustomRow(
+            children: [
+              Expanded(
+                child: CustomText(
+                  align: TextAlign.left,
+                  text: appointment.title,
+                  color: Colors.white,
                 ),
-                PopupMenuButton<String>(
-                    icon: Icon(Icons.adaptive.more, color: Colors.white),
-                    onSelected: (val) => optionSelected(val, appointment),
-                    itemBuilder: (context) =>
-                        ((TmiDateTime.now().getMillisecondsSinceEpoch() -
-                                        appointment.endTime
-                                            .getMillisecondsSinceEpoch()) >=
-                                    0
-                                ? ["Clone", "Remove"]
-                                : ["Clone", "Reschedule", "Remove"])
-                            .map((e) => PopupMenuItem<String>(
-                                  value: e,
-                                  child: CustomText(text: e),
-                                ))
-                            .toList()),
-              ],
-            ),
+              ),
+              PopupMenuButton<String>(
+                  icon: Icon(Icons.adaptive.more, color: Colors.white),
+                  onSelected: (val) => optionSelected(val, appointment),
+                  itemBuilder: (context) =>
+                      ((TmiDateTime.now().getMillisecondsSinceEpoch() -
+                                      appointment.endTime
+                                          .getMillisecondsSinceEpoch()) >=
+                                  0
+                              ? ["Clone", "Remove"]
+                              : ["Clone", "Reschedule", "Remove"])
+                          .map((e) => PopupMenuItem<String>(
+                                value: e,
+                                child: CustomText(text: e),
+                              ))
+                          .toList()),
+            ],
           ),
-        ));
-  }
-
-  void taskDragged(AppointmentDragEndDetails appointmentDragEndDetails) {
-    var newTiming = appointmentDragEndDetails.droppingTime;
-    print(newTiming?.toLocal().toString());
+        ),
+      ),
+    );
   }
 
   void fetchPlans() async {
-    _plans = await Plan.getAllPlans(TmiDateTime.nowWithMinDate(), context);
+    _plans = await Plan.getAllPlans(null, context);
     setState(() {});
   }
 
   void planDoubleTapped(Plan plan) async {
     AddOrUpdatePlanRoute.push(context, plan, (p0) {
       fetchPlans();
-    }, notEditable: true, title: "Plan Details");
+    }, notEditable: true, title: "Plan Details", forceDialog: true);
   }
 
   optionSelected(String val, Plan plan) {
@@ -171,7 +177,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
       setState(() {
         fetchPlans();
       });
-    }, onlyTimeEditable: true, title: "Reschedule Plan");
+    }, onlyTimeEditable: true, title: "Reschedule Plan", forceDialog: true);
   }
 
   void removePlanTapped(Plan plan) async {
@@ -184,9 +190,14 @@ class _SchedulePlansState extends State<SchedulePlans> {
     }
   }
 
-  void cloneTapped(Plan plan) {
+  void cloneTapped(Plan plan) async {
     plan.planId = TmiDateTime.now().getMillisecondsSinceEpoch().toString();
-    PlanDashboardRoute.push(context, selectedPlan: plan);
+    await PlanDashboardRoute.push(context,
+        selectedPlan: plan,
+        isCloneView: true,
+        editPlanSectionTitle: "Clone Plan",
+        planListSectionTitle: "Cloned Plans");
+    fetchPlans();
   }
 }
 
@@ -202,12 +213,14 @@ class MeetingDataSource extends CalendarDataSource {
 
   @override
   DateTime getStartTime(int index) {
-    return _getMeetingData(index).startTime.toDateTime();
+    var date = _getMeetingData(index).startTime.toDateTime();
+    return DateTime(date.year, date.month, date.day, date.hour, date.minute);
   }
 
   @override
   DateTime getEndTime(int index) {
-    return _getMeetingData(index).endTime.toDateTime();
+    var date = _getMeetingData(index).endTime.toDateTime();
+    return DateTime(date.year, date.month, date.day, date.hour, date.minute);
   }
 
   @override
@@ -240,7 +253,7 @@ class MeetingDataSource extends CalendarDataSource {
 class SchedulePlansRoute {
   static Future push(BuildContext context, List<Plan> plans,
       void Function(Plan) onPlanUpdated) async {
-    await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => SchedulePlans()));
+    await Navigator.push(context,
+        MaterialPageRoute(builder: (context) => const SchedulePlans()));
   }
 }

@@ -75,13 +75,16 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onChanged: widget.onEditing,
           obscureText: hiddenText,
           controller: widget.controller,
-          style: TextStyle(fontSize: sf.textSize, color: widget.textColor),
+          style: TextStyle(
+              fontSize: sf.textSize,
+              color: widget.readOnly ? Colors.grey : widget.textColor),
           maxLines: widget.maxLines,
           decoration: InputDecoration(
               isDense: true,
               labelText: widget.label,
-              labelStyle:
-                  TextStyle(fontSize: sf.textSize, color: widget.textColor),
+              labelStyle: TextStyle(
+                  fontSize: sf.textSize,
+                  color: widget.readOnly ? Colors.grey : widget.textColor),
               errorStyle: TextStyle(fontSize: sf.textSize - 6),
               hintStyle: TextStyle(fontSize: sf.textSize),
               errorText: widget.errorText,
@@ -94,9 +97,11 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ? const UnderlineInputBorder()
                   : OutlineInputBorder(
                       borderRadius: BorderRadius.circular(widget.borderRadius),
-                      borderSide: widget.borderColor == null
-                          ? const BorderSide()
-                          : BorderSide(color: widget.borderColor!)),
+                      borderSide: widget.readOnly
+                          ? const BorderSide(color: Colors.grey)
+                          : widget.borderColor == null
+                              ? const BorderSide()
+                              : BorderSide(color: widget.borderColor!)),
               contentPadding: const EdgeInsets.all(8),
               filled: widget.fillColor != null,
               fillColor: widget.fillColor,
@@ -104,21 +109,27 @@ class _CustomTextFieldState extends State<CustomTextField> {
                   ? const UnderlineInputBorder()
                   : OutlineInputBorder(
                       borderRadius: BorderRadius.circular(widget.borderRadius),
-                      borderSide: widget.borderColor == null
-                          ? const BorderSide()
-                          : BorderSide(color: widget.borderColor!)),
+                      borderSide: widget.readOnly
+                          ? const BorderSide(color: Colors.grey)
+                          : widget.borderColor == null
+                              ? const BorderSide()
+                              : BorderSide(color: widget.borderColor!)),
               disabledBorder: widget.underlinedBorder
                   ? const UnderlineInputBorder()
                   : OutlineInputBorder(
                       borderRadius: BorderRadius.circular(widget.borderRadius),
-                      borderSide: widget.borderColor == null
-                          ? const BorderSide()
-                          : BorderSide(color: widget.borderColor!)),
+                      borderSide: widget.readOnly
+                          ? const BorderSide(color: Colors.grey)
+                          : widget.borderColor == null
+                              ? const BorderSide()
+                              : BorderSide(color: widget.borderColor!)),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(widget.borderRadius),
-                  borderSide: widget.borderColor == null
-                      ? const BorderSide()
-                      : BorderSide(color: widget.borderColor!))),
+                  borderSide: widget.readOnly
+                      ? const BorderSide(color: Colors.grey)
+                      : widget.borderColor == null
+                          ? const BorderSide()
+                          : BorderSide(color: widget.borderColor!))),
         ));
   }
 

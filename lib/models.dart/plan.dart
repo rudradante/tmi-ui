@@ -119,9 +119,12 @@ class Plan extends BaseTable {
   }
 
   static Future<List<Plan>> getAllPlans(
-      TmiDateTime dateTime, BuildContext context) async {
-    var response = await Server.get(
-        '/plan/date/${dateTime.getMillisecondsSinceEpoch()}', {}, context);
+      TmiDateTime? dateTime, BuildContext context) async {
+    var url = '/plan';
+    if (dateTime != null) {
+      url += '/date/${dateTime.getMillisecondsSinceEpoch()}';
+    }
+    var response = await Server.get(url, {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       var responseJson = jsonDecode(response.body);
       var results =

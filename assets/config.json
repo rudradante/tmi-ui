@@ -2,7 +2,7 @@
   "environment": "dev",
   "server": {
     "baseUrl": {
-      "dev": "c5f5-2401-4900-1c67-51c0-6ce5-a087-63f7-b789.ngrok-free.app"
+      "dev": "072e-2401-4900-1c30-16-d4bf-16fe-25f9-4fef.ngrok-free.app"
     },
     "port": {
       "dev": "443"
@@ -22,7 +22,10 @@
     "scaffoldBackgroundColor": "1B89A1",
     "primaryButtonColor": "7A80A6",
     "inactiveTextColor": "CE9B9B",
-    "contentTextColor": "000000"
+    "contentTextColor": "000000",
+    "pastScheduleCardColor": "778899",
+    "secondaryScheduleCardColor": "008B8B",
+    "primaryScheduleCardColor": "20B2AA"
   },
   "app":{
     "timeZoneOffset": "19800"

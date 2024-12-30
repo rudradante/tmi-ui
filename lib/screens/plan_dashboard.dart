@@ -16,7 +16,12 @@ import 'my_plans.dart';
 
 class PlanDashboard extends StatefulWidget {
   final Plan? selectedPlan;
-  const PlanDashboard(this.selectedPlan, {Key? key}) : super(key: key);
+  final String editPlanSectionTitle, planListSectionTitle;
+  final bool isCloneView;
+  const PlanDashboard(this.selectedPlan, this.editPlanSectionTitle,
+      this.planListSectionTitle, this.isCloneView,
+      {Key? key})
+      : super(key: key);
 
   @override
   State<PlanDashboard> createState() => _PlanDashboardState();
@@ -37,7 +42,16 @@ class _PlanDashboardState extends State<PlanDashboard> {
     }
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
+      if (!widget.isCloneView) {
+        refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
+      } else {
+        ScreenFactors sf = calculateScreenFactors(context);
+        if (sf.maxComponents <= 2) {
+          AddOrUpdatePlanRoute.push(context, selectedPlan, newPlanAdded,
+              title: widget.editPlanSectionTitle,
+              onlyTimeEditable: widget.isCloneView);
+        }
+      }
     });
   }
 
@@ -47,37 +61,51 @@ class _PlanDashboardState extends State<PlanDashboard> {
     var sf = calculateScreenFactors(context);
     return CustomScaffold(
       showBackButton: false,
-      title: sf.maxComponents <= 2 ? "My Plans" : "Let's add a plan",
+      title: sf.maxComponents <= 2
+          ? widget.planListSectionTitle
+          : widget.editPlanSectionTitle,
       appBarTitleSize: 32,
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Add new plan",
-        shape: const CircleBorder(),
-        onPressed: addNewPlanTapped,
-        elevation: 8,
-        backgroundColor: HexColor.fromHex(theme.primaryThemeForegroundColor),
-        foregroundColor: Colors.white,
-        child: Icon(Icons.add, size: 32 * sf.cf),
-      ),
+      floatingActionButton: widget.isCloneView && sf.maxComponents > 2
+          ? null
+          : FloatingActionButton(
+              tooltip: widget.isCloneView ? "Clone plan" : "Add new plan",
+              shape: const CircleBorder(),
+              onPressed: addNewPlanTapped,
+              elevation: 8,
+              backgroundColor:
+                  HexColor.fromHex(theme.primaryThemeForegroundColor),
+              foregroundColor: Colors.white,
+              child: Icon(widget.isCloneView ? Icons.copy : Icons.add,
+                  size: 32 * sf.cf),
+            ),
       scaffoldBackgroundColor: HexColor.fromHex(theme.scaffoldBackgroundColor),
       actions: [
         if (sf.maxComponents > 2)
           SizedBox(
             width: 2 / 3 * sf.size.width - 32,
             child: CustomText(
-                text: "My Plans",
+                text: widget.planListSectionTitle,
                 textStyle: GoogleFonts.seaweedScript(
                     textStyle: TextStyle(
                         fontWeight: FontWeight.normal,
                         fontSize: 32,
                         color: HexColor.fromHex(theme.appBarForegroundColor)))),
           ),
-        MyPlanDateSelector(key: UniqueKey(), selectedDateChanged, selectedDate)
+        widget.isCloneView
+            ? const SizedBox()
+            : MyPlanDateSelector(
+                key: UniqueKey(), selectedDateChanged, selectedDate)
       ],
       centerWidget: sf.maxComponents <= 2
           ? SizedBox.fromSize(
               size: sf.size,
               child: MyPlans(
-                  _plans, planSelected, planDeleted, selectedPlan.planId))
+                _plans,
+                planSelected,
+                planDeleted,
+                selectedPlan.planId,
+                readonly: widget.isCloneView,
+              ))
           : CustomRow(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -87,53 +115,68 @@ class _PlanDashboardState extends State<PlanDashboard> {
                       selectedPlan,
                       newPlanAdded,
                       key: selectedPlanKey,
+                      onlyTimeEditable: widget.isCloneView,
                     )),
                 Expanded(
                   flex: 2,
                   child: MyPlans(
-                      _plans, planSelected, planDeleted, selectedPlan.planId,
-                      key: selectedPlanKey),
+                    _plans,
+                    planSelected,
+                    planDeleted,
+                    selectedPlan.planId,
+                    key: selectedPlanKey,
+                    readonly: widget.isCloneView,
+                  ),
                 )
               ],
             ),
-      bottomAppBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 60,
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 5,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            TextButton.icon(
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white)),
-                onPressed: scheduleTapped,
-                icon: const Icon(
-                  Icons.schedule,
-                  color: Colors.black,
-                ),
-                label: const CustomText(text: "Schedule")),
-            TextButton.icon(
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white)),
-                onPressed: scheduleTapped,
-                icon: const Icon(
-                  Icons.account_box,
-                  color: Colors.black,
-                ),
-                label: const CustomText(text: "My Account"))
-          ],
-        ),
-      ),
+      bottomAppBar: widget.isCloneView
+          ? null
+          : BottomAppBar(
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              height: 60,
+              color: Colors.white,
+              shape: const CircularNotchedRectangle(),
+              notchMargin: 5,
+              child: Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  TextButton.icon(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white)),
+                      onPressed: scheduleTapped,
+                      icon: const Icon(
+                        Icons.schedule,
+                        color: Colors.black,
+                      ),
+                      label: const CustomText(text: "Schedule")),
+                  TextButton.icon(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.white)),
+                      onPressed: scheduleTapped,
+                      icon: const Icon(
+                        Icons.account_box,
+                        color: Colors.black,
+                      ),
+                      label: const CustomText(text: "My Account"))
+                ],
+              ),
+            ),
     );
   }
 
   void addNewPlanTapped() {
     ScreenFactors sf = calculateScreenFactors(context);
     if (sf.maxComponents <= 2) {
-      AddOrUpdatePlanRoute.push(context, Plan.newPlan(), newPlanAdded);
+      AddOrUpdatePlanRoute.push(
+          context,
+          widget.isCloneView ? widget.selectedPlan! : Plan.newPlan(),
+          newPlanAdded,
+          title: widget.editPlanSectionTitle,
+          onlyTimeEditable: widget.isCloneView);
     } else {
       setState(() {
         selectedPlan = Plan.newPlan();
@@ -143,7 +186,16 @@ class _PlanDashboardState extends State<PlanDashboard> {
   }
 
   void newPlanAdded(Plan plan) {
-    refreshPlans();
+    var sf = calculateScreenFactors(context);
+    if (sf.maxComponents <= 2 && Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+    if (widget.isCloneView) {
+      _plans.add(plan);
+      setState(() {});
+    } else {
+      refreshPlans();
+    }
   }
 
   void refreshPlans({bool preserveSelectedPlan = false}) async {
@@ -158,9 +210,15 @@ class _PlanDashboardState extends State<PlanDashboard> {
   }
 
   planSelected(Plan selectedPlan) {
+    if (widget.isCloneView) {
+      PlanDashboardRoute.push(context,
+          isCloneView: false, selectedPlan: selectedPlan);
+      return;
+    }
     ScreenFactors sf = calculateScreenFactors(context);
     if (sf.maxComponents <= 2) {
-      AddOrUpdatePlanRoute.push(context, selectedPlan, newPlanAdded);
+      AddOrUpdatePlanRoute.push(context, selectedPlan, newPlanAdded,
+          onlyTimeEditable: widget.isCloneView);
     } else {
       setState(() {
         this.selectedPlan = selectedPlan;
@@ -253,10 +311,28 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
 }
 
 class PlanDashboardRoute {
-  static void push(BuildContext context, {Plan? selectedPlan}) {
-    Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => PlanDashboard(selectedPlan)),
-        (route) => false);
+  static Future push(BuildContext context,
+      {Plan? selectedPlan,
+      String editPlanSectionTitle = "Let's add a plan",
+      String planListSectionTitle = "My Plans",
+      bool isCloneView = false}) async {
+    if (!isCloneView) {
+      await Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PlanDashboard(selectedPlan,
+                  editPlanSectionTitle, planListSectionTitle, isCloneView)),
+          (route) => false);
+    } else {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => PlanDashboard(
+                    selectedPlan,
+                    editPlanSectionTitle,
+                    planListSectionTitle,
+                    isCloneView,
+                  )));
+    }
   }
 }
