@@ -8,7 +8,9 @@ import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/helpers/date_time.dart';
 import 'package:tmiui/screens/add_plan.dart';
 import 'package:tmiui/screens/schedule.dart';
+import 'package:tmiui/screens/screen_types.dart';
 
+import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_text.dart';
 import '../models.dart/plan.dart';
 import '../models.dart/tmi_datetime.dart';
@@ -60,112 +62,90 @@ class _PlanDashboardState extends State<PlanDashboard> {
     var theme = ConfigProvider.getThemeConfig();
     var sf = calculateScreenFactors(context);
     return CustomScaffold(
-      showBackButton: false,
-      title: sf.maxComponents <= 2
-          ? widget.planListSectionTitle
-          : widget.editPlanSectionTitle,
-      appBarTitleSize: 32,
-      floatingActionButton: widget.isCloneView && sf.maxComponents > 2
-          ? null
-          : FloatingActionButton(
-              tooltip: widget.isCloneView ? "Clone plan" : "Add new plan",
-              shape: const CircleBorder(),
-              onPressed: addNewPlanTapped,
-              elevation: 8,
-              backgroundColor:
-                  HexColor.fromHex(theme.primaryThemeForegroundColor),
-              foregroundColor: Colors.white,
-              child: Icon(widget.isCloneView ? Icons.copy : Icons.add,
-                  size: 32 * sf.cf),
+        showBackButton: false,
+        title: sf.maxComponents <= 2
+            ? widget.planListSectionTitle
+            : widget.editPlanSectionTitle,
+        appBarTitleSize: 32,
+        floatingActionButton: widget.isCloneView && sf.maxComponents > 2
+            ? null
+            : FloatingActionButton(
+                tooltip: widget.isCloneView
+                    ? "Clone plan"
+                    : sf.maxComponents > 2
+                        ? "Refresh plans"
+                        : "Add new plan",
+                shape: const CircleBorder(),
+                onPressed: addNewPlanTapped,
+                elevation: 8,
+                backgroundColor:
+                    HexColor.fromHex(theme.primaryThemeForegroundColor),
+                foregroundColor: Colors.white,
+                child: Icon(
+                    widget.isCloneView
+                        ? Icons.copy
+                        : sf.maxComponents > 2
+                            ? Icons.refresh
+                            : Icons.add,
+                    size: 32 * sf.cf),
+              ),
+        scaffoldBackgroundColor:
+            HexColor.fromHex(theme.scaffoldBackgroundColor),
+        actions: [
+          if (sf.maxComponents > 2)
+            SizedBox(
+              width: 2 / 3 * sf.size.width - 32,
+              child: CustomText(
+                  text: widget.planListSectionTitle,
+                  textStyle: GoogleFonts.seaweedScript(
+                      textStyle: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 32,
+                          color:
+                              HexColor.fromHex(theme.appBarForegroundColor)))),
             ),
-      scaffoldBackgroundColor: HexColor.fromHex(theme.scaffoldBackgroundColor),
-      actions: [
-        if (sf.maxComponents > 2)
-          SizedBox(
-            width: 2 / 3 * sf.size.width - 32,
-            child: CustomText(
-                text: widget.planListSectionTitle,
-                textStyle: GoogleFonts.seaweedScript(
-                    textStyle: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 32,
-                        color: HexColor.fromHex(theme.appBarForegroundColor)))),
-          ),
-        widget.isCloneView
-            ? const SizedBox()
-            : MyPlanDateSelector(
-                key: UniqueKey(), selectedDateChanged, selectedDate)
-      ],
-      centerWidget: sf.maxComponents <= 2
-          ? SizedBox.fromSize(
-              size: sf.size,
-              child: MyPlans(
-                _plans,
-                planSelected,
-                planDeleted,
-                selectedPlan.planId,
-                readonly: widget.isCloneView,
-              ))
-          : CustomRow(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                    flex: 1,
-                    child: AddOrUpdatePlan(
-                      selectedPlan,
-                      newPlanAdded,
+          widget.isCloneView
+              ? const SizedBox()
+              : MyPlanDateSelector(
+                  key: UniqueKey(), selectedDateChanged, selectedDate)
+        ],
+        centerWidget: sf.maxComponents <= 2
+            ? SizedBox.fromSize(
+                size: sf.size,
+                child: MyPlans(
+                  _plans,
+                  planSelected,
+                  planDeleted,
+                  selectedPlan.planId,
+                  readonly: widget.isCloneView,
+                ))
+            : CustomRow(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                      flex: 1,
+                      child: AddOrUpdatePlan(
+                        selectedPlan,
+                        newPlanAdded,
+                        key: selectedPlanKey,
+                        onlyTimeEditable: widget.isCloneView,
+                      )),
+                  Expanded(
+                    flex: 2,
+                    child: MyPlans(
+                      _plans,
+                      planSelected,
+                      planDeleted,
+                      selectedPlan.planId,
                       key: selectedPlanKey,
-                      onlyTimeEditable: widget.isCloneView,
-                    )),
-                Expanded(
-                  flex: 2,
-                  child: MyPlans(
-                    _plans,
-                    planSelected,
-                    planDeleted,
-                    selectedPlan.planId,
-                    key: selectedPlanKey,
-                    readonly: widget.isCloneView,
-                  ),
-                )
-              ],
-            ),
-      bottomAppBar: widget.isCloneView
-          ? null
-          : BottomAppBar(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              height: 60,
-              color: Colors.white,
-              shape: const CircularNotchedRectangle(),
-              notchMargin: 5,
-              child: Row(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  TextButton.icon(
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.white)),
-                      onPressed: scheduleTapped,
-                      icon: const Icon(
-                        Icons.schedule,
-                        color: Colors.black,
-                      ),
-                      label: const CustomText(text: "Schedule")),
-                  TextButton.icon(
-                      style: ButtonStyle(
-                          backgroundColor:
-                              MaterialStateProperty.all(Colors.white)),
-                      onPressed: scheduleTapped,
-                      icon: const Icon(
-                        Icons.account_box,
-                        color: Colors.black,
-                      ),
-                      label: const CustomText(text: "My Account"))
+                      readonly: widget.isCloneView,
+                    ),
+                  )
                 ],
               ),
-            ),
-    );
+        bottomAppBar: widget.isCloneView
+            ? null
+            : getTmiBottomAppBar(context, ScreenType.Dashboard));
   }
 
   void addNewPlanTapped() {

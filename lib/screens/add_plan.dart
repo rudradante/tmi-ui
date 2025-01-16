@@ -151,14 +151,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
               elevated: elevatedContainer,
               label: "Schedule",
               subtitle: "Choose when you start and end this task (Local Time)",
-              leading: CustomFlatButton(
-                  isOutlined: widget.notEditable,
-                  onTap: () {},
-                  text: isNewPlan
-                      ? "[Time Span]"
-                      : plan.startTime
+              leading: isNewPlan
+                  ? null
+                  : CustomFlatButton(
+                      isOutlined: widget.notEditable,
+                      onTap: () {},
+                      text: plan.startTime
                           .getTimeDifferenceInDuration(plan.endTime),
-                  color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
+                      color:
+                          HexColor.fromHex(theme.primaryThemeForegroundColor)),
               child: CustomRow(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -311,21 +312,21 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
-  void showStartEndTimeValidationIfApplicable() {
+  String? showStartEndTimeValidationIfApplicable() {
     if (plan.startTime.getMillisecondsSinceEpoch() >=
         plan.endTime.getMillisecondsSinceEpoch()) {
-      showSnackBarMessage(context,
-          "Seems like the start time is ahead or same as end time. Please update the end time");
+      return "Seems like the start time is ahead or same as end time. Please update the end time";
     }
+    return null;
   }
 
-  void showBreakTimingValidationWithRespectToPlanIfApplicable() {
+  String? showBreakTimingValidationWithRespectToPlanIfApplicable() {
     var idx = plan.breaks.indexWhere(
         (e) => PlanBreak.validateBreakTimingsWithPlan(plan, e) != null);
     if (idx >= 0) {
-      showSnackBarMessage(context,
-          PlanBreak.validateBreakTimingsWithPlan(plan, plan.breaks[idx]) ?? "");
+      return PlanBreak.validateBreakTimingsWithPlan(plan, plan.breaks[idx]);
     }
+    return null;
   }
 
   Future chooseEndTimeTapped() async {
@@ -336,8 +337,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     if (result == null) return;
     plan.endTime = result;
     setState(() {});
-    showStartEndTimeValidationIfApplicable();
-    showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
   saveButtonTapped() async {
@@ -356,6 +355,12 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
         0) {
       await showMessageDialog(
           "Invalid time", "Plan cannot be set in past", context);
+      return;
+    }
+    String? validationError = showStartEndTimeValidationIfApplicable() ??
+        showBreakTimingValidationWithRespectToPlanIfApplicable();
+    if (validationError != null) {
+      await showMessageDialog("Invalid time", validationError, context);
       return;
     }
     var requestPlan = plan;

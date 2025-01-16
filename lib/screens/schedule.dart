@@ -6,7 +6,9 @@ import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/screens/add_plan.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
+import 'package:tmiui/screens/screen_types.dart';
 
+import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_row.dart';
 import '../custom_widgets/custom_scaffold.dart';
 import '../custom_widgets/should_proceed_dialog.dart';
@@ -22,11 +24,13 @@ class SchedulePlans extends StatefulWidget {
 class _SchedulePlansState extends State<SchedulePlans> {
   List<Plan> _plans = [];
   int cardColorIndex = 0;
+  final Map<String, Color> _planColors = {};
   final List<Color> _cardColors = [
     HexColor.fromHex(ConfigProvider.getThemeConfig().primaryScheduleCardColor),
     HexColor.fromHex(
         ConfigProvider.getThemeConfig().secondaryScheduleCardColor),
   ];
+  TmiDateTime selectedDate = TmiDateTime.now();
   var selectedView = CalendarView.day;
   var allowedViews = [CalendarView.day, CalendarView.week, CalendarView.month];
   @override
@@ -49,6 +53,10 @@ class _SchedulePlansState extends State<SchedulePlans> {
           color: Colors.white,
           height: CustomScaffold.bodyHeight,
           child: SfCalendar(
+            initialSelectedDate: selectedDate.toDateTime(),
+            initialDisplayDate: selectedDate.toDateTime(),
+            showNavigationArrow: true,
+            showTodayButton: true,
             key: UniqueKey(),
             allowViewNavigation: true,
             allowDragAndDrop: false,
@@ -63,52 +71,89 @@ class _SchedulePlansState extends State<SchedulePlans> {
                 backgroundColor: HexColor.fromHex(
                     ConfigProvider.getThemeConfig().scaffoldBackgroundColor)),
           )),
-      bottomAppBar: BottomAppBar(
-        padding: const EdgeInsets.symmetric(horizontal: 10),
-        height: 60,
-        color: Colors.white,
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 5,
-        child: Row(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            TextButton.icon(
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white)),
-                onPressed: () => setState(() {
-                      selectedView = CalendarView.day;
-                    }),
-                icon: const Icon(
-                  Icons.schedule,
-                  color: Colors.black,
-                ),
-                label: const CustomText(text: "Day View")),
-            TextButton.icon(
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all(Colors.white)),
-                onPressed: () => setState(() {
-                      selectedView = CalendarView.week;
-                    }),
-                icon: const Icon(
-                  Icons.schedule,
-                  color: Colors.black,
-                ),
-                label: const CustomText(text: "Week View"))
-          ],
-        ),
+      bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule),
+      actions: [
+        MyPlanDateSelector(
+            (date) => setState(() {
+                  selectedDate = date;
+                }),
+            selectedDate)
+      ],
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Change view",
+        shape: const CircleBorder(),
+        backgroundColor: HexColor.fromHex(
+            ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
+        onPressed: () {},
+        child: PopupMenuButton<String>(
+            icon: Icon(Icons.calendar_view_day, color: Colors.white),
+            onSelected: viewOptionSelected,
+            itemBuilder: (context) => ["Day", "Week"]
+                .map((e) => PopupMenuItem<String>(
+                      value: e,
+                      child: CustomText(text: e),
+                    ))
+                .toList()),
       ),
+      // bottomAppBar: BottomAppBar(
+      //   padding: const EdgeInsets.symmetric(horizontal: 10),
+      //   height: 60,
+      //   color: Colors.white,
+      //   shape: const CircularNotchedRectangle(),
+      //   notchMargin: 5,
+      //   child: Row(
+      //     mainAxisSize: MainAxisSize.max,
+      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      //     children: <Widget>[
+      //       TextButton.icon(
+      //           style: ButtonStyle(
+      //               backgroundColor: MaterialStateProperty.all(Colors.white)),
+      //           onPressed: () => setState(() {
+      //                 selectedView = CalendarView.day;
+      //               }),
+      //           icon: const Icon(
+      //             Icons.schedule,
+      //             color: Colors.black,
+      //           ),
+      //           label: const CustomText(text: "Day View")),
+      //       TextButton.icon(
+      //           style: ButtonStyle(
+      //               backgroundColor: MaterialStateProperty.all(Colors.white)),
+      //           onPressed: () => setState(() {
+      //                 selectedView = CalendarView.week;
+      //               }),
+      //           icon: const Icon(
+      //             Icons.schedule,
+      //             color: Colors.black,
+      //           ),
+      //           label: const CustomText(text: "Week View"))
+      //     ],
+      //   ),
+      // ),
     );
+  }
+
+  void viewOptionSelected(String option) {
+    if (option == "Day") {
+      selectedView = CalendarView.day;
+    }
+    if (option == "Week") {
+      selectedView = CalendarView.week;
+    }
+    setState(() {});
   }
 
   Widget appointmentBuilder(BuildContext context,
       CalendarAppointmentDetails calendarAppointmentDetails) {
     final Plan appointment = calendarAppointmentDetails.appointments.first;
-    var color = appointment.endTime.getMillisecondsSinceEpoch() <
-            TmiDateTime.now().getMillisecondsSinceEpoch()
-        ? HexColor.fromHex(
-            ConfigProvider.getThemeConfig().pastScheduleCardColor)
-        : _cardColors[(cardColorIndex++) % _cardColors.length];
+    var color = _planColors.containsKey(appointment.planId)
+        ? _planColors[appointment.planId]
+        : appointment.endTime.getMillisecondsSinceEpoch() <
+                TmiDateTime.now().getMillisecondsSinceEpoch()
+            ? HexColor.fromHex(
+                ConfigProvider.getThemeConfig().pastScheduleCardColor)
+            : _cardColors[(cardColorIndex++) % _cardColors.length];
+    _planColors.putIfAbsent(appointment.planId, () => color!);
     return Container(
       margin: EdgeInsets.zero,
       decoration:
