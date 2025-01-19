@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/schedule.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
+import 'custom_column.dart';
 import 'custom_text.dart';
 
 BottomAppBar getTmiBottomAppBar(
@@ -17,46 +19,14 @@ BottomAppBar getTmiBottomAppBar(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        TextButton.icon(
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-            onPressed: () =>
-                screenTapped(ScreenType.Dashboard, currentScreen, context),
-            icon: const Icon(
-              Icons.home,
-              color: Colors.black,
-            ),
-            label: const CustomText(text: "Home")),
-        TextButton.icon(
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-            onPressed: () =>
-                screenTapped(ScreenType.Schedule, currentScreen, context),
-            icon: const Icon(
-              Icons.schedule,
-              color: Colors.black,
-            ),
-            label: const CustomText(text: "Schedule")),
-        TextButton.icon(
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-            onPressed: () =>
-                screenTapped(ScreenType.Review, currentScreen, context),
-            icon: const Icon(
-              Icons.reviews,
-              color: Colors.black,
-            ),
-            label: const CustomText(text: "Review")),
-        TextButton.icon(
-            style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.transparent)),
-            onPressed: () =>
-                screenTapped(ScreenType.MyAccount, currentScreen, context),
-            icon: const Icon(
-              Icons.account_box,
-              color: Colors.black,
-            ),
-            label: const CustomText(text: "My Account"))
+        BottomAppBarIconButton("Home", Icons.home,
+            () => screenTapped(ScreenType.Dashboard, currentScreen, context)),
+        BottomAppBarIconButton("Schedule", Icons.schedule,
+            () => screenTapped(ScreenType.Schedule, currentScreen, context)),
+        BottomAppBarIconButton("Review", Icons.reviews,
+            () => screenTapped(ScreenType.Review, currentScreen, context)),
+        BottomAppBarIconButton("My Account", Icons.account_box,
+            () => screenTapped(ScreenType.MyAccount, currentScreen, context)),
       ],
     ),
   );
@@ -76,5 +46,28 @@ void screenTapped(
 
     default:
       return;
+  }
+}
+
+class BottomAppBarIconButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final void Function() onTap;
+  const BottomAppBarIconButton(this.label, this.icon, this.onTap, {Key? key})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    var sf = calculateScreenFactors(context);
+    return InkWell(
+      onTap: onTap,
+      child: CustomColumn(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 24 * sf.cf, color: Colors.black),
+          CustomText(text: label, align: TextAlign.center, size: 10)
+        ],
+      ),
+    );
   }
 }

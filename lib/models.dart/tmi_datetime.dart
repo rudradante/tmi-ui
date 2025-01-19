@@ -98,4 +98,18 @@ class TmiDateTime {
   TmiDateTime add(Duration duration) {
     return TmiDateTime(this._millisecondsSinceEpoch + duration.inMilliseconds);
   }
+
+  static List<TmiDateTime> getStartAndEndOfWeek(TmiDateTime dateTime) {
+    var date = DateTime.fromMillisecondsSinceEpoch(
+        dateTime._millisecondsSinceEpoch,
+        isUtc: false);
+    int differenceToStart = date.weekday;
+    int daysToSubtract = differenceToStart % 7;
+    DateTime startOfWeek = date.subtract(Duration(days: daysToSubtract));
+    DateTime endOfWeek = startOfWeek.add(Duration(days: 6));
+    return [
+      TmiDateTime(startOfWeek.millisecondsSinceEpoch),
+      TmiDateTime(endOfWeek.millisecondsSinceEpoch)
+    ];
+  }
 }

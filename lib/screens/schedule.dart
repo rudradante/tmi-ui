@@ -30,7 +30,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
     HexColor.fromHex(
         ConfigProvider.getThemeConfig().secondaryScheduleCardColor),
   ];
-  TmiDateTime selectedDate = TmiDateTime.now();
+  TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
   var selectedView = CalendarView.day;
   var allowedViews = [CalendarView.day, CalendarView.week, CalendarView.month];
   @override
@@ -74,10 +74,13 @@ class _SchedulePlansState extends State<SchedulePlans> {
       bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule),
       actions: [
         MyPlanDateSelector(
-            (date) => setState(() {
-                  selectedDate = date;
-                }),
-            selectedDate)
+          key: UniqueKey(),
+          (date) => setState(() {
+            selectedDate = date;
+          }),
+          selectedDate,
+          weekView: selectedView == CalendarView.week,
+        )
       ],
       floatingActionButton: FloatingActionButton(
         tooltip: "Change view",
@@ -86,6 +89,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
             ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
         onPressed: () {},
         child: PopupMenuButton<String>(
+            tooltip: "Change view",
             icon: Icon(Icons.calendar_view_day, color: Colors.white),
             onSelected: viewOptionSelected,
             itemBuilder: (context) => ["Day", "Week"]
@@ -231,6 +235,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
     if (!proceed) return;
     var result = await Plan.deletePlan(plan.planId, context);
     if (result) {
+      _plans.removeWhere((element) => element.planId == plan.planId);
       setState(() {});
     }
   }

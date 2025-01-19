@@ -223,9 +223,11 @@ class _PlanDashboardState extends State<PlanDashboard> {
 }
 
 class MyPlanDateSelector extends StatefulWidget {
+  final bool weekView;
   final void Function(TmiDateTime) onDateChanged;
   final TmiDateTime selectedDate;
-  const MyPlanDateSelector(this.onDateChanged, this.selectedDate, {Key? key})
+  const MyPlanDateSelector(this.onDateChanged, this.selectedDate,
+      {Key? key, this.weekView = false})
       : super(key: key);
 
   @override
@@ -244,6 +246,12 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   @override
   Widget build(BuildContext context) {
     var theme = ConfigProvider.getThemeConfig();
+    var dateText = selectedDate.getDateAsString();
+    if (widget.weekView) {
+      var weekDates = TmiDateTime.getStartAndEndOfWeek(selectedDate);
+      dateText =
+          "${weekDates[0].getDateAsString()} - ${weekDates[1].getDateAsString()}";
+    }
     return CustomRow(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -254,7 +262,7 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
         InkWell(
           onTap: chooseDateTapped,
           child: CustomText(
-            text: selectedDate.getDateAsString(),
+            text: dateText,
             bold: true,
             color: HexColor.fromHex(theme.appBarForegroundColor),
           ),
@@ -268,12 +276,20 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   }
 
   void previousDateTapped() {
+    if (widget.weekView) {
+      var weekDates = TmiDateTime.getStartAndEndOfWeek(selectedDate);
+      selectedDate = weekDates[0];
+    }
     selectedDate = TmiDateTime(
         selectedDate.getMillisecondsSinceEpoch() - 24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
   }
 
   void nextDateTapped() {
+    if (widget.weekView) {
+      var weekDates = TmiDateTime.getStartAndEndOfWeek(selectedDate);
+      selectedDate = weekDates[1];
+    }
     selectedDate = TmiDateTime(
         selectedDate.getMillisecondsSinceEpoch() + 24 * 3600 * 1000);
     widget.onDateChanged(selectedDate);
