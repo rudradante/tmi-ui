@@ -24,8 +24,8 @@
     "inactiveTextColor": "CE9B9B",
     "contentTextColor": "000000",
     "pastScheduleCardColor": "778899",
-    "secondaryScheduleCardColor": "008B8B",
-    "primaryScheduleCardColor": "20B2AA"
+    "secondaryScheduleCardColor": "1B89A1",
+    "primaryScheduleCardColor": "055d70"
   },
   "app":{
     "timeZoneOffset": "19800"

@@ -151,10 +151,10 @@ class _SchedulePlansState extends State<SchedulePlans> {
                   onSelected: (val) => optionSelected(val, appointment),
                   itemBuilder: (context) =>
                       ((TmiDateTime.now().getMillisecondsSinceEpoch() -
-                                      appointment.endTime
+                                      appointment.startTime
                                           .getMillisecondsSinceEpoch()) >=
                                   0
-                              ? ["Clone", "Remove"]
+                              ? ["Clone"]
                               : ["Clone", "Reschedule", "Remove"])
                           .map((e) => PopupMenuItem<String>(
                                 value: e,
@@ -210,6 +210,8 @@ class _SchedulePlansState extends State<SchedulePlans> {
 
   void cloneTapped(Plan plan) async {
     plan.planId = TmiDateTime.now().getMillisecondsSinceEpoch().toString();
+    plan.startTime = plan.startTime.add(Duration(days: 1));
+    plan.endTime = plan.endTime.add(Duration(days: 1));
     await PlanDashboardRoute.push(context,
         selectedPlan: plan,
         isCloneView: true,

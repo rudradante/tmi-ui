@@ -73,7 +73,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
                 tooltip: widget.isCloneView
                     ? "Clone plan"
                     : sf.maxComponents > 2
-                        ? "Refresh plans"
+                        ? "Refresh window"
                         : "Add new plan",
                 shape: const CircleBorder(
                     side: BorderSide(width: 2, color: Colors.white)),
@@ -129,6 +129,10 @@ class _PlanDashboardState extends State<PlanDashboard> {
                         selectedPlan,
                         newPlanAdded,
                         key: selectedPlanKey,
+                        notEditable: !widget.isCloneView &&
+                            selectedPlan.startTime
+                                    .getMillisecondsSinceEpoch() <=
+                                TmiDateTime.now().getMillisecondsSinceEpoch(),
                         onlyTimeEditable: widget.isCloneView,
                       )),
                   Expanded(
@@ -151,13 +155,14 @@ class _PlanDashboardState extends State<PlanDashboard> {
 
   void addNewPlanTapped() {
     ScreenFactors sf = calculateScreenFactors(context);
+    Plan plan = widget.isCloneView ? widget.selectedPlan! : Plan.newPlan();
     if (sf.maxComponents <= 2) {
-      AddOrUpdatePlanRoute.push(
-          context,
-          widget.isCloneView ? widget.selectedPlan! : Plan.newPlan(),
-          newPlanAdded,
+      AddOrUpdatePlanRoute.push(context, plan, newPlanAdded,
           title: widget.editPlanSectionTitle,
-          onlyTimeEditable: widget.isCloneView);
+          onlyTimeEditable: widget.isCloneView,
+          notEditable: !widget.isCloneView &&
+              plan.startTime.getMillisecondsSinceEpoch() <=
+                  TmiDateTime.now().getMillisecondsSinceEpoch());
     } else {
       setState(() {
         selectedPlan = Plan.newPlan();
@@ -202,7 +207,10 @@ class _PlanDashboardState extends State<PlanDashboard> {
     ScreenFactors sf = calculateScreenFactors(context);
     if (sf.maxComponents <= 2) {
       AddOrUpdatePlanRoute.push(context, selectedPlan, newPlanAdded,
-          onlyTimeEditable: widget.isCloneView);
+          onlyTimeEditable: widget.isCloneView,
+          notEditable: !widget.isCloneView &&
+              selectedPlan.startTime.getMillisecondsSinceEpoch() <=
+                  TmiDateTime.now().getMillisecondsSinceEpoch());
     } else {
       setState(() {
         this.selectedPlan = selectedPlan;

@@ -36,6 +36,9 @@ class Plan extends BaseTable {
     breaks.sort((a, b) => a.startTime
         .getMillisecondsSinceEpoch()
         .compareTo(b.startTime.getMillisecondsSinceEpoch()));
+    planNotes.sort((a, b) => a.createdOn
+        .getMillisecondsSinceEpoch()
+        .compareTo(b.createdOn.getMillisecondsSinceEpoch()));
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
@@ -64,15 +67,16 @@ class Plan extends BaseTable {
 
   static Plan newPlan() {
     return Plan(
-        TmiDateTime(DateTime.now().millisecondsSinceEpoch),
-        TmiDateTime(DateTime.now().millisecondsSinceEpoch),
+        TmiDateTime(DateTime.now().millisecondsSinceEpoch + 3600000),
+        TmiDateTime(DateTime.now().millisecondsSinceEpoch + 7200000),
         LoginUser.currentLoginUser.userId,
         LoginUser.currentLoginUser.userId,
         "",
         "",
-        TmiDateTime.now(),
         TmiDateTime(
             TmiDateTime.now().getMillisecondsSinceEpoch() + 3600 * 1000),
+        TmiDateTime(
+            TmiDateTime.now().getMillisecondsSinceEpoch() + 7200 * 1000),
         TmiDateTime.now().getMillisecondsSinceEpoch().toString(),
         LoginUser.currentLoginUser.userId,
         [],

@@ -32,10 +32,11 @@ Future<TmiDateTime?> chooseDate(
   String? fieldLableText,
 }) async {
   var date = await showDatePicker(
-      fieldLabelText: "(MM/DD/YYYY)",
+      fieldLabelText: "(DD/MM/YYYY)",
       context: context,
       fieldHintText: fieldLableText,
       helpText: fieldLableText,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
       //barrierLabel: fieldLableText,
       initialDate: initialDateTime.toDateTime(),
       firstDate: firstDateTime.toDateTime(),

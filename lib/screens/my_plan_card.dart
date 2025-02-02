@@ -43,8 +43,12 @@ class _MyPlanCardState extends State<MyPlanCard> {
           decoration: BoxDecoration(
             color: widget.isSelected
                 ? Colors.white
-                : HexColor.fromHex(
-                    ConfigProvider.getThemeConfig().primaryButtonColor),
+                : (widget.plan.startTime.getMillisecondsSinceEpoch() <=
+                        TmiDateTime.now().getMillisecondsSinceEpoch())
+                    ? HexColor.fromHex(
+                        ConfigProvider.getThemeConfig().pastScheduleCardColor)
+                    : HexColor.fromHex(
+                        ConfigProvider.getThemeConfig().primaryButtonColor),
             borderRadius: BorderRadius.circular(sf.cf * 32),
             border: Border.all(width: 2, color: Colors.white),
           ),
@@ -68,19 +72,22 @@ class _MyPlanCardState extends State<MyPlanCard> {
                         : CustomRow(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              PopupMenuButton<String>(
-                                  icon: Icon(Icons.adaptive.more,
-                                      color: foreGroundColor),
-                                  onSelected: (val) =>
-                                      optionSelected(val, widget.plan.planId),
-                                  itemBuilder: (context) => [
-                                        "Delete",
-                                      ]
-                                          .map((e) => PopupMenuItem<String>(
-                                                value: e,
-                                                child: CustomText(text: e),
-                                              ))
-                                          .toList()),
+                              if (widget.plan.startTime
+                                      .getMillisecondsSinceEpoch() >
+                                  TmiDateTime.now().getMillisecondsSinceEpoch())
+                                PopupMenuButton<String>(
+                                    icon: Icon(Icons.adaptive.more,
+                                        color: foreGroundColor),
+                                    onSelected: (val) =>
+                                        optionSelected(val, widget.plan.planId),
+                                    itemBuilder: (context) => [
+                                          "Remove",
+                                        ]
+                                            .map((e) => PopupMenuItem<String>(
+                                                  value: e,
+                                                  child: CustomText(text: e),
+                                                ))
+                                            .toList()),
                               collapsed
                                   ? IconButton(
                                       tooltip: "View notes",
@@ -159,9 +166,9 @@ class _MyPlanCardState extends State<MyPlanCard> {
   }
 
   void optionSelected(String value, String id) async {
-    if (value == "Delete") {
+    if (value == "Remove") {
       var proceed = await showShouldProceedDialog(
-          "Delete", "Are you sure you want to remove this plan?", context);
+          "Remove", "Are you sure you want to remove this plan?", context);
       if (!proceed) return;
       var result = await Plan.deletePlan(id, context);
       if (result) {

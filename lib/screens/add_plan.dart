@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, unused_import
+import "dart:async";
 import "dart:convert";
 
 import "package:file_picker/file_picker.dart";
@@ -373,11 +374,33 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
       result = await Plan.updatePlan(requestPlan, context);
     }
     if (result == null) return;
-    await showCustomDialog(
-        "Saved", Icon(Icons.done, color: Colors.brown, size: 64), context,
-        forceDialog: true);
-    plan = result;
-    widget.newPlanAdded(plan);
+    bool showingSavedDialog = true;
+    Timer closedDialogTimer = Timer(const Duration(seconds: 2), () {
+      if (showingSavedDialog && Navigator.canPop(context)) {
+        Navigator.pop(context);
+        showingSavedDialog = false;
+      }
+    });
+    showDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (context) => Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                ),
+                width: 100,
+                height: 100,
+                padding: const EdgeInsets.all(16),
+                child: const Icon(Icons.done, color: Colors.brown, size: 64),
+              ),
+            )).then((value) {
+      showingSavedDialog = false;
+      closedDialogTimer.cancel();
+      plan = result!;
+      widget.newPlanAdded(plan);
+    });
   }
 
   void referenceTapped(String url) async {
@@ -439,7 +462,7 @@ class _PlanBreaksState extends State<PlanBreaks> {
         elevated: widget.elevatedContainer,
         label: "Breaks",
         subtitle:
-            "Take breaks with the planned time to increase efficiency (Local Time)",
+            "Take breaks within the duration of task to increase efficiency (Local Time)",
         child: CustomColumn(
           mainAxisSize: MainAxisSize.min,
           children: breaks
@@ -569,6 +592,10 @@ class AddOrUpdatePlanRoute {
       bool forceDialog = false,
       String? title}) {
     var sf = calculateScreenFactors(context);
+    if (plan.startTime.getMillisecondsSinceEpoch() <=
+        TmiDateTime.now().getMillisecondsSinceEpoch()) {
+      notEditable = true;
+    }
     if (sf.maxComponents > 2 && forceDialog) {
       showCustomDialog(
           title ?? (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
