@@ -228,11 +228,11 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                   child: CustomRow(mainAxisSize: MainAxisSize.max, children: [
                     Expanded(
                       child: CustomFlatButton(
-                        elevated: true,
-                        onTap: saveButtonTapped,
-                        color: HexColor.fromHex(theme.primaryButtonColor),
-                        text: "Save",
-                      ),
+                          elevated: true,
+                          onTap: saveButtonTapped,
+                          color: HexColor.fromHex(theme.primaryButtonColor),
+                          text: "Save",
+                          outlineColor: Colors.white),
                     ),
                   ]),
                 )
@@ -373,6 +373,9 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
       result = await Plan.updatePlan(requestPlan, context);
     }
     if (result == null) return;
+    await showCustomDialog(
+        "Saved", Icon(Icons.done, color: Colors.brown, size: 64), context,
+        forceDialog: true);
     plan = result;
     widget.newPlanAdded(plan);
   }

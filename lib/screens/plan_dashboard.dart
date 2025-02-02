@@ -64,7 +64,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
     return CustomScaffold(
         showBackButton: false,
         title: sf.maxComponents <= 2
-            ? widget.planListSectionTitle
+            ? widget.editPlanSectionTitle
             : widget.editPlanSectionTitle,
         appBarTitleSize: 32,
         floatingActionButton: widget.isCloneView && sf.maxComponents > 2
@@ -75,7 +75,8 @@ class _PlanDashboardState extends State<PlanDashboard> {
                     : sf.maxComponents > 2
                         ? "Refresh plans"
                         : "Add new plan",
-                shape: const CircleBorder(),
+                shape: const CircleBorder(
+                    side: BorderSide(width: 2, color: Colors.white)),
                 onPressed: addNewPlanTapped,
                 elevation: 8,
                 backgroundColor:
@@ -92,18 +93,18 @@ class _PlanDashboardState extends State<PlanDashboard> {
         scaffoldBackgroundColor:
             HexColor.fromHex(theme.scaffoldBackgroundColor),
         actions: [
-          if (sf.maxComponents > 2)
-            SizedBox(
-              width: 2 / 3 * sf.size.width - 32,
-              child: CustomText(
-                  text: widget.planListSectionTitle,
-                  textStyle: GoogleFonts.seaweedScript(
-                      textStyle: TextStyle(
-                          fontWeight: FontWeight.normal,
-                          fontSize: 32,
-                          color:
-                              HexColor.fromHex(theme.appBarForegroundColor)))),
-            ),
+          // if (sf.maxComponents > 2)
+          //   SizedBox(
+          //     width: sf.size.width / 2,
+          //     child: CustomText(
+          //         text: widget.planListSectionTitle,
+          //         textStyle: GoogleFonts.seaweedScript(
+          //             textStyle: TextStyle(
+          //                 fontWeight: FontWeight.normal,
+          //                 fontSize: 32,
+          //                 color:
+          //                     HexColor.fromHex(theme.appBarForegroundColor)))),
+          //   ),
           widget.isCloneView
               ? const SizedBox()
               : MyPlanDateSelector(
@@ -180,6 +181,9 @@ class _PlanDashboardState extends State<PlanDashboard> {
 
   void refreshPlans({bool preserveSelectedPlan = false}) async {
     _plans = await Plan.getAllPlans(selectedDate, context);
+    _plans.sort((a, b) => a.createdOn
+        .getMillisecondsSinceEpoch()
+        .compareTo(b.createdOn.getMillisecondsSinceEpoch()));
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     selectedPlan = Plan.newPlan();
     if (preserveSelectedPlan) {
@@ -309,8 +313,8 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
 class PlanDashboardRoute {
   static Future push(BuildContext context,
       {Plan? selectedPlan,
-      String editPlanSectionTitle = "Let's add a plan",
-      String planListSectionTitle = "My Plans",
+      String editPlanSectionTitle = "My Plans",
+      String planListSectionTitle = "",
       bool isCloneView = false}) async {
     if (!isCloneView) {
       await Navigator.pushAndRemoveUntil(

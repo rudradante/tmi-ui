@@ -26,10 +26,10 @@ class PlanBreak {
     if (breakStartTime >= breakEndTime) {
       return "Break interval must be a least a minute long";
     }
-    if (breakStartTime <= planStartTime ||
-        breakStartTime >= planEndTime ||
-        breakEndTime <= planStartTime ||
-        breakEndTime >= planEndTime) {
+    if (breakStartTime < planStartTime ||
+        breakStartTime > planEndTime ||
+        breakEndTime < planStartTime ||
+        breakEndTime > planEndTime) {
       return "Break intervals must be within plan duration";
     }
     return null;

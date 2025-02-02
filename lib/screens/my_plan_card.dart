@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/custom_widgets/custom_column.dart';
 import 'package:tmiui/custom_widgets/should_proceed_dialog.dart';
@@ -40,9 +41,12 @@ class _MyPlanCardState extends State<MyPlanCard> {
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color:
-                widget.isSelected ? Colors.white : HexColor.fromHex('65506B'),
+            color: widget.isSelected
+                ? Colors.white
+                : HexColor.fromHex(
+                    ConfigProvider.getThemeConfig().primaryButtonColor),
             borderRadius: BorderRadius.circular(sf.cf * 32),
+            border: Border.all(width: 2, color: Colors.white),
           ),
           child: CustomColumn(
             mainAxisSize: MainAxisSize.min,

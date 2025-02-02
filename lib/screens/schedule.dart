@@ -44,7 +44,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: "Schedule",
+      title: "My Schedule",
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(
           ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
@@ -71,7 +71,10 @@ class _SchedulePlansState extends State<SchedulePlans> {
                 backgroundColor: HexColor.fromHex(
                     ConfigProvider.getThemeConfig().scaffoldBackgroundColor)),
           )),
-      bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule),
+      bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule,
+          bgColor: HexColor.fromHex(
+              ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
+          fgColor: Colors.white),
       actions: [
         MyPlanDateSelector(
           key: UniqueKey(),
@@ -99,41 +102,6 @@ class _SchedulePlansState extends State<SchedulePlans> {
                     ))
                 .toList()),
       ),
-      // bottomAppBar: BottomAppBar(
-      //   padding: const EdgeInsets.symmetric(horizontal: 10),
-      //   height: 60,
-      //   color: Colors.white,
-      //   shape: const CircularNotchedRectangle(),
-      //   notchMargin: 5,
-      //   child: Row(
-      //     mainAxisSize: MainAxisSize.max,
-      //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //     children: <Widget>[
-      //       TextButton.icon(
-      //           style: ButtonStyle(
-      //               backgroundColor: MaterialStateProperty.all(Colors.white)),
-      //           onPressed: () => setState(() {
-      //                 selectedView = CalendarView.day;
-      //               }),
-      //           icon: const Icon(
-      //             Icons.schedule,
-      //             color: Colors.black,
-      //           ),
-      //           label: const CustomText(text: "Day View")),
-      //       TextButton.icon(
-      //           style: ButtonStyle(
-      //               backgroundColor: MaterialStateProperty.all(Colors.white)),
-      //           onPressed: () => setState(() {
-      //                 selectedView = CalendarView.week;
-      //               }),
-      //           icon: const Icon(
-      //             Icons.schedule,
-      //             color: Colors.black,
-      //           ),
-      //           label: const CustomText(text: "Week View"))
-      //     ],
-      //   ),
-      // ),
     );
   }
 

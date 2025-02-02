@@ -16,6 +16,12 @@ class TmiApp extends StatelessWidget {
         title: 'TMI',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
+            datePickerTheme: DatePickerThemeData(
+                inputDecorationTheme: InputDecorationTheme(
+              floatingLabelStyle: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: HexColor.fromHex(themeConfig.primaryButtonColor)),
+            )),
             popupMenuTheme: const PopupMenuThemeData(
                 color: Colors.white,
                 labelTextStyle:

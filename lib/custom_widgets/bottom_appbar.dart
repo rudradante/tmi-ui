@@ -1,32 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/schedule.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
+import '../extensions/color.dart';
 import 'custom_column.dart';
 import 'custom_text.dart';
 
-BottomAppBar getTmiBottomAppBar(
-    BuildContext context, ScreenType currentScreen) {
+BottomAppBar getTmiBottomAppBar(BuildContext context, ScreenType currentScreen,
+    {Color? bgColor, Color? fgColor}) {
+  var theme = ConfigProvider.getThemeConfig();
+
+  var textColor = fgColor == null ? Colors.black : Colors.white;
+  fgColor = fgColor ?? HexColor.fromHex(theme.primaryButtonColor);
   return BottomAppBar(
     padding: const EdgeInsets.symmetric(horizontal: 10),
     height: 60,
-    color: Colors.white,
+    color: bgColor ?? Colors.white,
     shape: CircularNotchedRectangle(),
     notchMargin: 5,
     child: Row(
       mainAxisSize: MainAxisSize.max,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
-        BottomAppBarIconButton("Home", Icons.home,
-            () => screenTapped(ScreenType.Dashboard, currentScreen, context)),
-        BottomAppBarIconButton("Schedule", Icons.schedule,
-            () => screenTapped(ScreenType.Schedule, currentScreen, context)),
-        BottomAppBarIconButton("Review", Icons.reviews,
-            () => screenTapped(ScreenType.Review, currentScreen, context)),
-        BottomAppBarIconButton("My Account", Icons.account_box,
-            () => screenTapped(ScreenType.MyAccount, currentScreen, context)),
+        BottomAppBarIconButton(
+            "My Plans",
+            Icons.assignment_outlined,
+            () => screenTapped(ScreenType.Dashboard, currentScreen, context),
+            fgColor,
+            textColor),
+        BottomAppBarIconButton(
+            "My Schedule",
+            Icons.schedule,
+            () => screenTapped(ScreenType.Schedule, currentScreen, context),
+            fgColor,
+            textColor),
+        SizedBox(
+          width: 16,
+        ),
+        BottomAppBarIconButton(
+            "My Review",
+            Icons.assessment_outlined,
+            () => screenTapped(ScreenType.Review, currentScreen, context),
+            fgColor,
+            textColor),
+        BottomAppBarIconButton(
+            "My Account",
+            Icons.account_box_outlined,
+            () => screenTapped(ScreenType.MyAccount, currentScreen, context),
+            fgColor,
+            textColor),
       ],
     ),
   );
@@ -53,7 +78,11 @@ class BottomAppBarIconButton extends StatelessWidget {
   final String label;
   final IconData icon;
   final void Function() onTap;
-  const BottomAppBarIconButton(this.label, this.icon, this.onTap, {Key? key})
+  final Color color;
+  final Color textColor;
+  const BottomAppBarIconButton(
+      this.label, this.icon, this.onTap, this.color, this.textColor,
+      {Key? key})
       : super(key: key);
 
   @override
@@ -64,8 +93,13 @@ class BottomAppBarIconButton extends StatelessWidget {
       child: CustomColumn(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 24 * sf.cf, color: Colors.black),
-          CustomText(text: label, align: TextAlign.center, size: 10)
+          Icon(icon, size: 24 * sf.cf, color: color),
+          CustomText(
+            text: label,
+            align: TextAlign.center,
+            size: 10,
+            color: textColor,
+          )
         ],
       ),
     );
