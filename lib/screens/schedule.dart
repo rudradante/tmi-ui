@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 import 'package:tmiui/config/config_provider.dart';
@@ -30,12 +32,27 @@ class _SchedulePlansState extends State<SchedulePlans> {
     HexColor.fromHex(
         ConfigProvider.getThemeConfig().secondaryScheduleCardColor),
   ];
-  TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
-  var selectedView = CalendarView.day;
+  //TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
+  CalendarController _calendarController = CalendarController();
+  ValueNotifier<DateTime> _dateNotifier =
+      ValueNotifier(TmiDateTime.nowWithMinDate().toDateTime());
+  //var selectedView = CalendarView.day;
   var allowedViews = [CalendarView.day, CalendarView.week, CalendarView.month];
   @override
   initState() {
     super.initState();
+    _calendarController = CalendarController();
+    _calendarController.displayDate = TmiDateTime.nowWithMinDate().toDateTime();
+    _dateNotifier.value = _calendarController.displayDate!;
+    _calendarController.view = CalendarView.day;
+    _calendarController.addPropertyChangedListener((p0) {
+      if (p0 == "displayDate") {
+        _dateNotifier.value = _calendarController.displayDate!;
+        //
+        Timer(
+            Duration(milliseconds: 300), () => _dateNotifier.notifyListeners());
+      }
+    });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       fetchPlans();
     });
@@ -44,7 +61,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: "My Schedule",
+      title: "My Schedules",
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(
           ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
@@ -53,37 +70,42 @@ class _SchedulePlansState extends State<SchedulePlans> {
           color: Colors.white,
           height: CustomScaffold.bodyHeight,
           child: SfCalendar(
-            initialSelectedDate: selectedDate.toDateTime(),
-            initialDisplayDate: selectedDate.toDateTime(),
+            controller: _calendarController,
             showNavigationArrow: true,
             showTodayButton: true,
             key: UniqueKey(),
             allowViewNavigation: true,
             allowDragAndDrop: false,
-            view: selectedView,
+            //view: selectedView,
             dataSource: MeetingDataSource(_plans),
             showCurrentTimeIndicator: true,
             appointmentBuilder: appointmentBuilder,
-            timeSlotViewSettings:
-                const TimeSlotViewSettings(timeIntervalHeight: 60),
+            timeSlotViewSettings: const TimeSlotViewSettings(
+                timeIntervalHeight: 60, timeTextStyle: TextStyle(fontSize: 10)),
             headerHeight: 0,
             headerStyle: CalendarHeaderStyle(
                 backgroundColor: HexColor.fromHex(
-                    ConfigProvider.getThemeConfig().scaffoldBackgroundColor)),
+                    ConfigProvider.getThemeConfig().primaryScheduleCardColor)),
           )),
       bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule,
           bgColor: HexColor.fromHex(
               ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
           fgColor: Colors.white),
       actions: [
-        MyPlanDateSelector(
-          key: UniqueKey(),
-          (date) => setState(() {
-            selectedDate = date;
-          }),
-          selectedDate,
-          weekView: selectedView == CalendarView.week,
-        )
+        ValueListenableBuilder(
+            valueListenable: _dateNotifier,
+            builder: (context, value, child) {
+              return MyPlanDateSelector(
+                key: UniqueKey(),
+                (date) {
+                  _calendarController.displayDate = date.toDateTime();
+                  _dateNotifier.value = _calendarController.displayDate!;
+                  _dateNotifier.notifyListeners();
+                },
+                TmiDateTime(value.millisecondsSinceEpoch),
+                weekView: _calendarController.view! == CalendarView.week,
+              );
+            })
       ],
       floatingActionButton: FloatingActionButton(
         tooltip: "Change view",
@@ -107,10 +129,10 @@ class _SchedulePlansState extends State<SchedulePlans> {
 
   void viewOptionSelected(String option) {
     if (option == "Day") {
-      selectedView = CalendarView.day;
+      _calendarController.view = CalendarView.day;
     }
     if (option == "Week") {
-      selectedView = CalendarView.week;
+      _calendarController.view = CalendarView.week;
     }
     setState(() {});
   }
@@ -215,7 +237,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
     await PlanDashboardRoute.push(context,
         selectedPlan: plan,
         isCloneView: true,
-        editPlanSectionTitle: "Clone Plan",
+        editPlanSectionTitle: "Clone My Plan",
         planListSectionTitle: "Cloned Plans");
     fetchPlans();
   }

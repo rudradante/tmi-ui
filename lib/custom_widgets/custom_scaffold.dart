@@ -76,17 +76,16 @@ class _CustomScaffoldState extends State<CustomScaffold> {
           widget.appBarBackgroundColor ?? widget.scaffoldBackgroundColor,
       elevation: 0,
       actions: actions,
-      title: FittedBox(
-          child: CustomText(
-              textStyle: GoogleFonts.seaweedScript(
-                  textStyle: TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: (widget.appBarTitleSize),
-                      color: HexColor.fromHex(theme.appBarForegroundColor))),
-              text: widget.title,
-              color: HexColor.fromHex(theme.appBarForegroundColor),
-              bold: false,
-              size: widget.appBarTitleSize)),
+      title: CustomText(
+          textStyle: GoogleFonts.seaweedScript(
+              textStyle: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: (widget.appBarTitleSize),
+                  color: HexColor.fromHex(theme.appBarForegroundColor))),
+          text: widget.title,
+          color: HexColor.fromHex(theme.appBarForegroundColor),
+          bold: false,
+          size: widget.appBarTitleSize),
       centerTitle: false,
       leading: widget.showBackButton
           ? IconButton(
