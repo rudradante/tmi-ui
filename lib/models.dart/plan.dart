@@ -7,6 +7,7 @@ import 'package:tmiui/models.dart/login_user.dart';
 import 'package:tmiui/models.dart/plan_break.dart';
 import 'package:tmiui/models.dart/plan_note.dart';
 import 'package:tmiui/models.dart/plan_references.dart';
+import 'package:tmiui/models.dart/plan_review.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
 import '../server/request.dart';
@@ -17,6 +18,7 @@ class Plan extends BaseTable {
   List<PlanReference> planReferences;
   List<PlanBreak> breaks;
   List<PlanNote> planNotes;
+  PlanReview? review;
 
   Plan(
       TmiDateTime createdOn,
@@ -31,7 +33,8 @@ class Plan extends BaseTable {
       this.userId,
       this.planReferences,
       this.breaks,
-      this.planNotes)
+      this.planNotes,
+      this.review)
       : super(createdBy, updatedBy, createdOn, updatedOn) {
     breaks.sort((a, b) => a.startTime
         .getMillisecondsSinceEpoch()
@@ -62,7 +65,10 @@ class Plan extends BaseTable {
         (json['notes'] as List<dynamic>)
             .map((e) => PlanNote.fromJson(
                 (e as Map<String, dynamic>), json['planId'] ?? ""))
-            .toList());
+            .toList(),
+        (json['review'] == null
+            ? null
+            : PlanReview.fromJson(json, json['planId'])));
   }
 
   static Plan newPlan() {
@@ -81,7 +87,8 @@ class Plan extends BaseTable {
         LoginUser.currentLoginUser.userId,
         [],
         [],
-        []);
+        [],
+        null);
   }
 
   Map<String, dynamic> toJson() {

@@ -6,6 +6,7 @@ import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/models.dart/plan.dart';
+import 'package:tmiui/models.dart/plan_review.dart';
 import 'package:tmiui/screens/add_plan.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/screen_types.dart';
@@ -13,34 +14,27 @@ import 'package:tmiui/screens/screen_types.dart';
 import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_row.dart';
 import '../custom_widgets/custom_scaffold.dart';
-import '../custom_widgets/should_proceed_dialog.dart';
 import '../models.dart/tmi_datetime.dart';
 
-class SchedulePlans extends StatefulWidget {
-  const SchedulePlans({Key? key}) : super(key: key);
+Map<String, bool> _reviewing = {};
+
+class ReviewPlans extends StatefulWidget {
+  const ReviewPlans({Key? key}) : super(key: key);
 
   @override
-  State<SchedulePlans> createState() => _SchedulePlansState();
+  State<ReviewPlans> createState() => _ReviewPlansState();
 }
 
-class _SchedulePlansState extends State<SchedulePlans> {
+class _ReviewPlansState extends State<ReviewPlans> {
   List<Plan> _plans = [];
-  int cardColorIndex = 0;
-  final Map<String, Color> _planColors = {};
-  final List<Color> _cardColors = [
-    HexColor.fromHex(ConfigProvider.getThemeConfig().primaryScheduleCardColor),
-    HexColor.fromHex(
-        ConfigProvider.getThemeConfig().secondaryScheduleCardColor),
-  ];
-  //TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
   CalendarController _calendarController = CalendarController();
   ValueNotifier<DateTime> _dateNotifier =
       ValueNotifier(TmiDateTime.nowWithMinDate().toDateTime());
-  //var selectedView = CalendarView.day;
-  var allowedViews = [CalendarView.day, CalendarView.week, CalendarView.month];
+  var allowedViews = [CalendarView.day];
   @override
   initState() {
     super.initState();
+    _reviewing.clear();
     _calendarController = CalendarController();
     _calendarController.displayDate = TmiDateTime.nowWithMinDate().toDateTime();
     _dateNotifier.value = _calendarController.displayDate!;
@@ -61,7 +55,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: "My Schedules",
+      title: "My Reviews",
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(
           ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
@@ -87,7 +81,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
                 backgroundColor: HexColor.fromHex(
                     ConfigProvider.getThemeConfig().primaryScheduleCardColor)),
           )),
-      bottomAppBar: getTmiBottomAppBar(context, ScreenType.Schedule,
+      bottomAppBar: getTmiBottomAppBar(context, ScreenType.Review,
           bgColor: HexColor.fromHex(
               ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
           fgColor: Colors.white),
@@ -107,87 +101,14 @@ class _SchedulePlansState extends State<SchedulePlans> {
               );
             })
       ],
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Change view",
-        shape: const CircleBorder(),
-        backgroundColor: HexColor.fromHex(
-            ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
-        onPressed: () {},
-        child: PopupMenuButton<String>(
-            tooltip: "Change view",
-            icon: const Icon(Icons.calendar_view_day, color: Colors.white),
-            onSelected: viewOptionSelected,
-            itemBuilder: (context) => ["Day", "Week"]
-                .map((e) => PopupMenuItem<String>(
-                      value: e,
-                      child: CustomText(text: e),
-                    ))
-                .toList()),
-      ),
     );
-  }
-
-  void viewOptionSelected(String option) {
-    if (option == "Day") {
-      _calendarController.view = CalendarView.day;
-    }
-    if (option == "Week") {
-      _calendarController.view = CalendarView.week;
-    }
-    setState(() {});
   }
 
   Widget appointmentBuilder(BuildContext context,
       CalendarAppointmentDetails calendarAppointmentDetails) {
-    final Plan appointment = calendarAppointmentDetails.appointments.first;
-    var color = _planColors.containsKey(appointment.planId)
-        ? _planColors[appointment.planId]
-        : appointment.endTime.getMillisecondsSinceEpoch() <
-                TmiDateTime.now().getMillisecondsSinceEpoch()
-            ? HexColor.fromHex(
-                ConfigProvider.getThemeConfig().pastScheduleCardColor)
-            : _cardColors[(cardColorIndex++) % _cardColors.length];
-    _planColors.putIfAbsent(appointment.planId, () => color!);
-    return Container(
-      margin: EdgeInsets.zero,
-      decoration:
-          BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
-      padding: const EdgeInsets.all(4),
-      width: calendarAppointmentDetails.bounds.width,
-      height: calendarAppointmentDetails.bounds.height,
-      child: Tooltip(
-        message: appointment.title,
-        child: InkWell(
-          onDoubleTap: () => planDoubleTapped(appointment),
-          child: CustomRow(
-            children: [
-              Expanded(
-                child: CustomText(
-                  align: TextAlign.left,
-                  text: appointment.title,
-                  color: Colors.white,
-                ),
-              ),
-              PopupMenuButton<String>(
-                  icon: Icon(Icons.adaptive.more, color: Colors.white),
-                  onSelected: (val) => optionSelected(val, appointment),
-                  itemBuilder: (context) =>
-                      ((TmiDateTime.now().getMillisecondsSinceEpoch() -
-                                      appointment.startTime
-                                          .getMillisecondsSinceEpoch()) >=
-                                  0
-                              ? ["Clone"]
-                              : ["Clone", "Reschedule", "Remove"])
-                          .map((e) => PopupMenuItem<String>(
-                                value: e,
-                                child: CustomText(text: e),
-                              ))
-                          .toList()),
-            ],
-          ),
-        ),
-      ),
-    );
+    return ReviewCardWidget(
+        calendarAppointmentDetails: calendarAppointmentDetails,
+        onReviewSaved: reviewUpdated);
   }
 
   void fetchPlans() async {
@@ -195,51 +116,100 @@ class _SchedulePlansState extends State<SchedulePlans> {
     setState(() {});
   }
 
-  void planDoubleTapped(Plan plan) async {
-    AddOrUpdatePlanRoute.push(context, plan, (p0) {
-      fetchPlans();
-    }, notEditable: true, title: "Plan Details", forceDialog: true);
-  }
-
-  optionSelected(String val, Plan plan) {
-    if (val == "Clone") {
-      cloneTapped(plan);
-    } else if (val == "Reschedule") {
-      rescheduleTapped(plan);
-    } else if (val == "Remove") {
-      removePlanTapped(plan);
-    }
-  }
-
-  void rescheduleTapped(Plan plan) {
-    AddOrUpdatePlanRoute.push(context, plan, (p0) {
-      setState(() {
-        fetchPlans();
-      });
-    }, onlyTimeEditable: true, title: "Reschedule Plan", forceDialog: true);
-  }
-
-  void removePlanTapped(Plan plan) async {
-    var proceed = await showShouldProceedDialog(
-        "Delete", "Are you sure you want to remove this plan?", context);
-    if (!proceed) return;
-    var result = await Plan.deletePlan(plan.planId, context);
-    if (result) {
-      _plans.removeWhere((element) => element.planId == plan.planId);
-      setState(() {});
-    }
-  }
-
-  void cloneTapped(Plan plan) async {
-    plan.planId = TmiDateTime.now().getMillisecondsSinceEpoch().toString();
-    plan.startTime = plan.startTime.add(const Duration(days: 1));
-    plan.endTime = plan.endTime.add(const Duration(days: 1));
-    await PlanDashboardRoute.push(context,
-        selectedPlan: plan,
-        isCloneView: true,
-        editPlanSectionTitle: "Clone My Plan",
-        planListSectionTitle: "Cloned Plans");
+  void reviewUpdated(String planId, int percent) async {
+    var plan = _plans.where((element) => element.planId == planId).singleOrNull;
+    var request = PlanReview(
+        TmiDateTime.now().getMillisecondsSinceEpoch().toString(),
+        planId,
+        TmiDateTime.now(),
+        percent);
+    var result = await PlanReview.updateReview(request, context);
+    if (result == null) return;
+    _reviewing.remove(planId);
     fetchPlans();
+  }
+}
+
+class ReviewCardWidget extends StatefulWidget {
+  const ReviewCardWidget(
+      {super.key,
+      required this.calendarAppointmentDetails,
+      required this.onReviewSaved});
+  final CalendarAppointmentDetails calendarAppointmentDetails;
+  final void Function(String, int) onReviewSaved;
+
+  @override
+  State<ReviewCardWidget> createState() => _ReviewCardWidgetState();
+}
+
+class _ReviewCardWidgetState extends State<ReviewCardWidget> {
+  int percentage = 0;
+  @override
+  Widget build(BuildContext context) {
+    final Plan appointment =
+        widget.calendarAppointmentDetails.appointments.first;
+    bool inReviewMode = _reviewing.containsKey(appointment.planId) &&
+        appointment.review == null;
+    var color = appointment.review == null
+        ? HexColor.fromHex(
+            ConfigProvider.getThemeConfig().pastScheduleCardColor)
+        : HexColor.fromHex(
+            ConfigProvider.getThemeConfig().primaryScheduleCardColor);
+    return Container(
+      margin: EdgeInsets.zero,
+      decoration:
+          BoxDecoration(color: color, borderRadius: BorderRadius.circular(8)),
+      padding: const EdgeInsets.all(4),
+      width: widget.calendarAppointmentDetails.bounds.width,
+      height: widget.calendarAppointmentDetails.bounds.height,
+      child: Tooltip(
+        message: appointment.title,
+        child: InkWell(
+          onDoubleTap: () => planDoubleTapped(appointment),
+          child: CustomRow(
+            children: [
+              !inReviewMode
+                  ? Expanded(
+                      child: CustomText(
+                        align: TextAlign.left,
+                        text: appointment.title,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Expanded(
+                      child: Slider(
+                      divisions: 100,
+                      min: 0,
+                      max: 100,
+                      label: (percentage).toString(),
+                      value: (percentage).toDouble(),
+                      onChanged: (value) {
+                        percentage = value.round();
+                        setState(() {});
+                      },
+                    )),
+              IconButton(
+                  onPressed: () => inReviewMode
+                      ? widget.onReviewSaved(appointment.planId, percentage)
+                      : enableReviewTapped(appointment.planId),
+                  icon: Icon(inReviewMode ? Icons.save : Icons.mode_edit,
+                      color: Colors.white))
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  enableReviewTapped(String planId) {
+    _reviewing.remove(planId);
+    _reviewing.putIfAbsent(planId, () => true);
+    setState(() {});
+  }
+
+  void planDoubleTapped(Plan plan) async {
+    AddOrUpdatePlanRoute.push(context, plan, (p0) {},
+        notEditable: true, title: "Plan Details", forceDialog: true);
   }
 }
 
@@ -292,10 +262,9 @@ class MeetingDataSource extends CalendarDataSource {
   }
 }
 
-class SchedulePlansRoute {
-  static Future push(BuildContext context, List<Plan> plans,
-      void Function(Plan) onPlanUpdated) async {
-    await Navigator.push(context,
-        MaterialPageRoute(builder: (context) => const SchedulePlans()));
+class ReviewPlansRoute {
+  static Future push(BuildContext context, List<Plan> plans) async {
+    await Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const ReviewPlans()));
   }
 }

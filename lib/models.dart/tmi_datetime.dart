@@ -22,9 +22,12 @@ class TmiDateTime {
     return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }
 
-  DateTime toDateTime() =>
-      DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch, isUtc: true)
-          .add(Duration(milliseconds: timeZoneOffsetMs));
+  DateTime toDateTime({bool addTimeZoneOffset = true}) => addTimeZoneOffset
+      ? DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch,
+              isUtc: true)
+          .add(Duration(milliseconds: timeZoneOffsetMs))
+      : DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch,
+          isUtc: true);
 
   String getTimeDifferenceInDuration(TmiDateTime d2) {
     String result = "";

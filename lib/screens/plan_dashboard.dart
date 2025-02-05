@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/custom_widgets/custom_row.dart';

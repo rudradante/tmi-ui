@@ -49,6 +49,12 @@ Future<TmiDateTime?> chooseDate(
 Future<TmiDateTime?> chooseTime(BuildContext context, TmiDateTime preFixedDate,
     {String? fieldLabelText}) async {
   var timeOfDay = await showTimePicker(
+      builder: (BuildContext context, Widget? child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+          child: child!,
+        );
+      },
       context: context,
       initialTime: preFixedDate.toTimeOfDay(),
       helpText: fieldLabelText);

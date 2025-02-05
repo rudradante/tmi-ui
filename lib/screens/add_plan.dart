@@ -81,7 +81,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           GroupingContainer(
               elevated: elevatedContainer,
               label: "Plan Details",
-              subtitle: "Add details about the task you are adding",
+              subtitle: "Add details of the task",
               child: CustomColumn(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,

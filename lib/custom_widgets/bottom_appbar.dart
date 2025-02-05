@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
+import 'package:tmiui/screens/review.dart';
 import 'package:tmiui/screens/schedule.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
@@ -68,7 +69,8 @@ void screenTapped(
     case ScreenType.Schedule:
       SchedulePlansRoute.push(context, [], (p0) {});
       break;
-
+    case ScreenType.Review:
+      ReviewPlansRoute.push(context, []);
     default:
       return;
   }
