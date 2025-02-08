@@ -14,6 +14,7 @@ class PlanReview {
   PlanReview(this.reviewId, this.planId, this.createdOn, this.percentage);
 
   static PlanReview fromJson(Map<String, dynamic> json, String planId) {
+    print(json);
     return PlanReview(json['reviewId'], planId, TmiDateTime(json['createdOn']),
         json['percentage']);
   }
@@ -24,13 +25,13 @@ class PlanReview {
   }
 
   Map<String, dynamic> toJson() {
-    return {"percentage": percentage, "planId": planId, 'reviewId': reviewId};
+    return {"percentage": percentage, "planId": planId};
   }
 
   static Future<PlanReview?> updateReview(
       PlanReview planReview, BuildContext context) async {
-    var response =
-        await Server.update('/review', {}, jsonEncode(planReview), context);
+    var response = await Server.update(
+        '/plan/review', {}, jsonEncode(planReview), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       planReview.reviewId = jsonDecode(response.body)['reviewId'];
       return planReview;

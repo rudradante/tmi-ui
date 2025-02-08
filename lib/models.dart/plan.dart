@@ -68,7 +68,7 @@ class Plan extends BaseTable {
             .toList(),
         (json['review'] == null
             ? null
-            : PlanReview.fromJson(json, json['planId'])));
+            : PlanReview.fromJson(json['review'], json['planId'])));
   }
 
   static Plan newPlan() {

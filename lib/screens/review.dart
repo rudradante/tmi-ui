@@ -1,4 +1,5 @@
 import 'dart:async';
+import "package:tmiui/custom_widgets/custom_flat_button.dart";
 
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
@@ -168,6 +169,14 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
           onDoubleTap: () => planDoubleTapped(appointment),
           child: CustomRow(
             children: [
+              inReviewMode
+                  ? CustomFlatButton(
+                      isOutlined: false,
+                      onTap: () {},
+                      text: percentage.toString() + "%",
+                      color: HexColor.fromHex(ConfigProvider.getThemeConfig()
+                          .primaryThemeForegroundColor))
+                  : SizedBox(),
               !inReviewMode
                   ? Expanded(
                       child: CustomText(
@@ -188,12 +197,29 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                         setState(() {});
                       },
                     )),
-              IconButton(
-                  onPressed: () => inReviewMode
-                      ? widget.onReviewSaved(appointment.planId, percentage)
-                      : enableReviewTapped(appointment.planId),
-                  icon: Icon(inReviewMode ? Icons.save : Icons.mode_edit,
-                      color: Colors.white))
+              appointment.review == null
+                  ? IconButton(
+                      tooltip: "Save",
+                      onPressed: () => inReviewMode
+                          ? widget.onReviewSaved(appointment.planId, percentage)
+                          : enableReviewTapped(appointment.planId),
+                      icon: Icon(inReviewMode ? Icons.save : Icons.mode_edit,
+                          color: Colors.white))
+                  : CustomFlatButton(
+                      isOutlined: false,
+                      onTap: () {},
+                      text: appointment.review!.percentage.toString() + "%",
+                      color: HexColor.fromHex(ConfigProvider.getThemeConfig()
+                          .primaryThemeForegroundColor)),
+              inReviewMode
+                  ? IconButton(
+                      tooltip: "Reset",
+                      onPressed: () => setState(() {
+                            percentage = 0;
+                            _reviewing.remove(appointment.planId);
+                          }),
+                      icon: Icon(Icons.undo, color: Colors.white))
+                  : SizedBox()
             ],
           ),
         ),
