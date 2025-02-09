@@ -99,10 +99,12 @@ class _SchedulePlansState extends State<SchedulePlans> {
                 key: UniqueKey(),
                 (date) {
                   _calendarController.displayDate =
-                      date.toDateTime(addTimeZoneOffset: false);
+                      DateTime.fromMillisecondsSinceEpoch(
+                          date.getMillisecondsSinceEpoch(),
+                          isUtc: false);
                   _dateNotifier.value = _calendarController.displayDate!;
                 },
-                TmiDateTime(value.millisecondsSinceEpoch),
+                TmiDateTime(_dateNotifier.value.millisecondsSinceEpoch),
                 weekView: _calendarController.view! == CalendarView.week,
               );
             })
