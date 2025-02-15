@@ -163,28 +163,61 @@ class _SchedulePlansState extends State<SchedulePlans> {
           onDoubleTap: () => planDoubleTapped(appointment),
           child: CustomRow(
             children: [
-              Expanded(
-                child: CustomText(
-                  align: TextAlign.left,
-                  text: appointment.title,
-                  color: Colors.white,
-                ),
-              ),
-              PopupMenuButton<String>(
-                  icon: Icon(Icons.adaptive.more, color: Colors.white),
-                  onSelected: (val) => optionSelected(val, appointment),
-                  itemBuilder: (context) =>
-                      ((TmiDateTime.now().getMillisecondsSinceEpoch() -
-                                      appointment.startTime
-                                          .getMillisecondsSinceEpoch()) >=
-                                  0
-                              ? ["Clone"]
-                              : ["Clone", "Reschedule", "Remove"])
-                          .map((e) => PopupMenuItem<String>(
-                                value: e,
-                                child: CustomText(text: e),
-                              ))
-                          .toList()),
+              appointment.endTime.getMillisecondsSinceEpoch() -
+                          appointment.startTime.getMillisecondsSinceEpoch() >=
+                      3600000
+                  ? Expanded(
+                      child: CustomText(
+                        align: TextAlign.left,
+                        text: appointment.title,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Expanded(
+                      child: FittedBox(
+                        alignment: Alignment.centerLeft,
+                        child: CustomText(
+                          align: TextAlign.left,
+                          text: appointment.title,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+              appointment.endTime.getMillisecondsSinceEpoch() -
+                          appointment.startTime.getMillisecondsSinceEpoch() >=
+                      3600000
+                  ? PopupMenuButton<String>(
+                      icon: Icon(Icons.adaptive.more, color: Colors.white),
+                      onSelected: (val) => optionSelected(val, appointment),
+                      itemBuilder: (context) =>
+                          ((TmiDateTime.now().getMillisecondsSinceEpoch() -
+                                          appointment.startTime
+                                              .getMillisecondsSinceEpoch()) >=
+                                      0
+                                  ? ["Clone"]
+                                  : ["Clone", "Reschedule", "Remove"])
+                              .map((e) => PopupMenuItem<String>(
+                                    value: e,
+                                    child: CustomText(text: e),
+                                  ))
+                              .toList())
+                  : FittedBox(
+                      child: PopupMenuButton<String>(
+                          icon: Icon(Icons.adaptive.more, color: Colors.white),
+                          onSelected: (val) => optionSelected(val, appointment),
+                          itemBuilder: (context) => ((TmiDateTime.now()
+                                              .getMillisecondsSinceEpoch() -
+                                          appointment.startTime
+                                              .getMillisecondsSinceEpoch()) >=
+                                      0
+                                  ? ["Clone"]
+                                  : ["Clone", "Reschedule", "Remove"])
+                              .map((e) => PopupMenuItem<String>(
+                                    value: e,
+                                    child: CustomText(text: e),
+                                  ))
+                              .toList()),
+                    )
             ],
           ),
         ),

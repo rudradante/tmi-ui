@@ -135,7 +135,6 @@ class _ReviewPlansState extends State<ReviewPlans> {
         percent,
         0);
     var result = await PlanReview.updateReview(request, context);
-    print(result);
     if (result == null) return;
     _reviewing.remove(planId);
     _planColors.remove(planId);
@@ -253,16 +252,33 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
             child: Row(
               children: [
                 !inReviewMode
-                    ? Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: CustomText(
-                            align: TextAlign.left,
-                            text: appointment.title,
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
+                    ? appointment.endTime.getMillisecondsSinceEpoch() -
+                                appointment.startTime
+                                    .getMillisecondsSinceEpoch() >=
+                            3600000
+                        ? Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: CustomText(
+                                align: TextAlign.left,
+                                text: appointment.title,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
+                        : Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: FittedBox(
+                                alignment: Alignment.centerLeft,
+                                child: CustomText(
+                                  align: TextAlign.left,
+                                  text: appointment.title,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          )
                     : Expanded(
                         child: Slider(
                         divisions: 100,
@@ -295,7 +311,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                 ConfigProvider.getThemeConfig()
                                     .primaryThemeForegroundColor))),
                     appointment.review == null
-                        ? SizedBox()
+                        ? const SizedBox()
                         : CustomText(
                             text: "$percentage%",
                             size: 10,
