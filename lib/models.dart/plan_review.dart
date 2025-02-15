@@ -15,14 +15,15 @@ class PlanReview {
   PlanReview(this.reviewId, this.planId, this.createdOn, this.percentage,
       this.updatedCount);
 
-  static PlanReview fromJson(Map<String, dynamic> json, String planId) {
+  static PlanReview fromJson(Map<String, dynamic> json, String planId,
+      {String? reviewId}) {
     return PlanReview(
-        json['reviewId'],
+        json['reviewId'] ?? reviewId,
         planId,
         TmiDateTime(
             json['createdOn'] ?? TmiDateTime.now().getMillisecondsSinceEpoch()),
         json['percentage'] ?? 0,
-        json['updatedCount'] ?? 1);
+        json['editCount'] ?? 0);
   }
 
   static PlanReview newReview(String planId) {
@@ -40,7 +41,8 @@ class PlanReview {
         '/plan/review', {}, jsonEncode(planReview), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       print(response.body);
-      return PlanReview.fromJson(jsonDecode(response.body), planReview.planId);
+      return PlanReview.fromJson(jsonDecode(response.body), planReview.planId,
+          reviewId: planReview.reviewId);
     }
     return null;
   }

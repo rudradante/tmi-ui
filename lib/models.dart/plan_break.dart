@@ -10,7 +10,6 @@ class PlanBreak {
 
   PlanBreak(this.startTime, this.endTime) {
     id = (_idCounter++).toString();
-    print(id);
   }
 
   static PlanBreak fromJson(Map<String, dynamic> json) {

@@ -42,6 +42,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
   initState() {
     super.initState();
     _reviewing.clear();
+    _planColors.clear();
     _calendarController = CalendarController();
     _calendarController.displayDate = TmiDateTime.nowWithMinDate().toDateTime();
     _dateNotifier.value = _calendarController.displayDate!;
@@ -134,8 +135,10 @@ class _ReviewPlansState extends State<ReviewPlans> {
         percent,
         0);
     var result = await PlanReview.updateReview(request, context);
+    print(result);
     if (result == null) return;
     _reviewing.remove(planId);
+    _planColors.remove(planId);
     fetchPlans();
   }
 }
