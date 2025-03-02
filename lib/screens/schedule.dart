@@ -165,7 +165,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
             children: [
               appointment.endTime.getMillisecondsSinceEpoch() -
                           appointment.startTime.getMillisecondsSinceEpoch() >=
-                      3600000
+                      1800000
                   ? Expanded(
                       child: CustomText(
                         align: TextAlign.left,
@@ -185,7 +185,7 @@ class _SchedulePlansState extends State<SchedulePlans> {
                     ),
               appointment.endTime.getMillisecondsSinceEpoch() -
                           appointment.startTime.getMillisecondsSinceEpoch() >=
-                      3600000
+                      1800000
                   ? PopupMenuButton<String>(
                       icon: Icon(Icons.adaptive.more, color: Colors.white),
                       onSelected: (val) => optionSelected(val, appointment),
