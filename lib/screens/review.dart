@@ -140,6 +140,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
     _reviewing.remove(planId);
     _planColors.remove(planId);
     fetchPlans();
+    print(_plans[0].review?.updatedCount);
   }
 }
 
@@ -180,17 +181,10 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
             ? _planColors[appointment.planId]
             : _cardColors[(cardColorIndex++) % _cardColors.length];
     _planColors.putIfAbsent(appointment.planId, () => color!);
-    var progressColor = appointment.review == null
-        ? Colors.white
-        : appointment.review!.percentage <= 40
-            ? Colors.red
-            : appointment.review!.percentage <= 75
-                ? Colors.orange
-                : Colors.green;
+    var progressColor = color;
     bool isShortPlan = appointment.endTime.getMillisecondsSinceEpoch() -
             appointment.startTime.getMillisecondsSinceEpoch() <
-        1800000;
-
+        40 * 60 * 1000;
     return Container(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(0),
@@ -234,8 +228,22 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                               widget.calendarAppointmentDetails.bounds.width -
                                   80,
                           height: (2 / 3) *
-                              widget.calendarAppointmentDetails.bounds.height,
+                                  widget.calendarAppointmentDetails.bounds
+                                      .height -
+                              2,
                         ),
+                        Container(
+                            margin: EdgeInsets.zero,
+                            padding: EdgeInsets.zero,
+                            width:
+                                widget.calendarAppointmentDetails.bounds.width -
+                                    80,
+                            color: true
+                                ? Colors.white
+                                : HexColor.fromHex(
+                                    ConfigProvider.getThemeConfig()
+                                        .primaryButtonColor),
+                            height: 2),
                         CustomRow(
                           children: [
                             Container(
@@ -243,6 +251,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                 color:
                                     inReviewMode ? Colors.white : progressColor,
                                 borderRadius: const BorderRadius.only(
+                                    topLeft: Radius.circular(8),
                                     bottomLeft: Radius.circular(8)),
                                 // border: Border.all(
                                 //     color:
@@ -261,48 +270,41 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                       .calendarAppointmentDetails.bounds.height,
                             ),
                             Container(
-                              alignment: Alignment.centerRight,
-                              decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: const BorderRadius.only(
-                                      //topRight: Radius.circular(8),
-                                      bottomRight: Radius.circular(8)),
-                                  border: Border(
-                                      bottom: BorderSide(
-                                          color: inReviewMode
-                                              ? Colors.white
-                                              : progressColor,
-                                          width: 0.5),
-                                      right: BorderSide(
-                                          color: inReviewMode
-                                              ? Colors.white
-                                              : progressColor,
-                                          width: 0.5))),
-
-                              margin: EdgeInsets.zero,
-                              padding: EdgeInsets.zero,
-                              width: ((100 - percentage) /
-                                  100 *
-                                  (widget.calendarAppointmentDetails.bounds
-                                          .width -
-                                      80)),
-                              height: (1 / 3) *
-                                  widget
-                                      .calendarAppointmentDetails.bounds.height,
-                              child: appointment.review == null || inReviewMode
-                                  ? const SizedBox()
-                                  : Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 4.0),
-                                      child: wrapInFittedBox(
-                                          CustomText(
-                                            text: "$percentage%",
-                                            size: 10,
-                                          ),
-                                          isShortPlan),
-                                    ),
-                              //color: Colors.white,
-                            ),
+                                alignment: Alignment.centerRight,
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: const BorderRadius.only(
+                                        topRight: Radius.circular(8),
+                                        bottomRight: Radius.circular(8)),
+                                    border: Border(
+                                        top: BorderSide(
+                                            color: inReviewMode
+                                                ? Colors.white
+                                                : progressColor!,
+                                            width: 0.5),
+                                        bottom: BorderSide(
+                                            color: inReviewMode
+                                                ? Colors.white
+                                                : progressColor!,
+                                            width: 0.5),
+                                        right: BorderSide(
+                                            color: inReviewMode
+                                                ? Colors.white
+                                                : progressColor!,
+                                            width: 0.5))),
+                                margin: EdgeInsets.zero,
+                                padding: EdgeInsets.zero,
+                                width: ((100 - percentage) /
+                                    100 *
+                                    (widget.calendarAppointmentDetails.bounds
+                                            .width -
+                                        80)),
+                                height: (1 / 3) *
+                                    widget.calendarAppointmentDetails.bounds
+                                        .height,
+                                child: const SizedBox()
+                                //color: Colors.white,
+                                ),
                           ],
                         ),
                       ],
@@ -322,7 +324,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                 !inReviewMode
                     ? Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
+                          padding: const EdgeInsets.all(10.0),
                           child: wrapInFittedBox(
                               CustomText(
                                 align: TextAlign.left,
@@ -333,72 +335,128 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                         ),
                       )
                     : Expanded(
-                        child: wrapInFittedBox(
-                            Slider(
-                              divisions: 100,
-                              min: 0,
-                              max: 100,
-                              label: (percentage).toString(),
-                              value: (percentage).toDouble(),
-                              onChanged: (value) {
-                                percentage = value.round();
-                                setState(() {});
-                              },
-                            ),
-                            isShortPlan),
-                      ),
-                inReviewMode
+                        child: Slider(
+                        divisions: 100,
+                        min: 0,
+                        max: 100,
+                        label: (percentage).toString(),
+                        value: (percentage).toDouble(),
+                        onChanged: (value) {
+                          percentage = value.round();
+                          setState(() {});
+                        },
+                      )),
+                appointment.review != null || inReviewMode
                     ? Padding(
-                        padding: const EdgeInsets.only(right: 4.0),
+                        padding: const EdgeInsets.only(right: 16.0, bottom: 4),
                         child: wrapInFittedBox(
                             CustomText(
+                              color: inReviewMode ? null : Colors.white,
                               text: "$percentage%",
-                              size: 10,
+                              //size: 14,
                             ),
                             isShortPlan),
                       )
                     : const SizedBox(),
                 wrapInFittedBox(
-                    IconButton(
-                        tooltip: inReviewMode ? "Save" : "Update review",
-                        onPressed: () => inReviewMode
-                            ? widget.onReviewSaved(
-                                appointment.planId, percentage)
-                            : enableReviewTapped(appointment.planId,
-                                appointment.review?.updatedCount),
-                        icon: Icon(
-                            appointment.review == null
-                                ? Icons.check_circle
-                                : inReviewMode
-                                    ? Icons.check_circle
-                                    : Icons.check_circle,
-                            color: HexColor.fromHex(
-                                ConfigProvider.getThemeConfig()
-                                    .primaryThemeForegroundColor))),
+                    Container(
+                        padding: const EdgeInsets.all(4),
+                        margin: EdgeInsets.zero,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                                width: 2,
+                                color:
+                                    (appointment.review?.updatedCount ?? 0) == 3
+                                        ? HexColor.fromHex(
+                                            ConfigProvider.getThemeConfig()
+                                                .inactiveTextColor)
+                                        : HexColor.fromHex(
+                                            ConfigProvider.getThemeConfig()
+                                                .primaryThemeForegroundColor))),
+                        child: Tooltip(
+                          message: inReviewMode ? "Save" : "Update review",
+                          child: InkWell(
+                              // padding: EdgeInsets.zero,
+                              // tooltip: ,
+                              onTap: () => inReviewMode
+                                  ? widget.onReviewSaved(
+                                      appointment.planId, percentage)
+                                  : enableReviewTapped(appointment.planId,
+                                      appointment.review?.updatedCount),
+                              child: !inReviewMode
+                                  ? Padding(
+                                      padding: const EdgeInsets.all(4.0),
+                                      child: CustomText(
+                                          fontWeight: FontWeight.w500,
+                                          text: (3 -
+                                                  (appointment.review
+                                                          ?.updatedCount ??
+                                                      0))
+                                              .toString(),
+                                          size: 16,
+                                          color: (appointment.review
+                                                          ?.updatedCount ??
+                                                      0) ==
+                                                  3
+                                              ? HexColor.fromHex(ConfigProvider
+                                                      .getThemeConfig()
+                                                  .inactiveTextColor)
+                                              : HexColor.fromHex(ConfigProvider
+                                                      .getThemeConfig()
+                                                  .primaryThemeForegroundColor)),
+                                    )
+                                  : Icon(Icons.check,
+                                      color: HexColor.fromHex(
+                                          ConfigProvider.getThemeConfig()
+                                              .primaryThemeForegroundColor))),
+                        )),
                     isShortPlan),
+                SizedBox(width: 12),
                 inReviewMode
                     ? wrapInFittedBox(
-                        IconButton(
-                            tooltip: "Reset",
-                            onPressed: () => setState(() {
-                                  percentage =
-                                      appointment.review?.percentage ?? 0;
-                                  _reviewing.remove(appointment.planId);
-                                }),
-                            icon: Icon(Icons.undo,
-                                color: HexColor.fromHex(
-                                    ConfigProvider.getThemeConfig()
-                                        .primaryThemeForegroundColor))),
+                        Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: EdgeInsets.zero,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    width: 2,
+                                    color: HexColor.fromHex(
+                                        ConfigProvider.getThemeConfig()
+                                            .primaryThemeForegroundColor))),
+                            child: Tooltip(
+                                message: "Reset",
+                                child: InkWell(
+                                    onTap: () => setState(() {
+                                          percentage =
+                                              appointment.review?.percentage ??
+                                                  0;
+                                          _reviewing.remove(appointment.planId);
+                                        }),
+                                    child: Icon(Icons.undo,
+                                        color: HexColor.fromHex(ConfigProvider
+                                                .getThemeConfig()
+                                            .primaryThemeForegroundColor))))),
                         isShortPlan)
                     : const SizedBox(),
                 !inReviewMode
                     ? wrapInFittedBox(
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
-                          child: InkWell(
-                              child: SvgPicture.asset('assets/icons/ai.svg',
-                                  height: 24, width: 24)),
-                        ),
+                        Container(
+                            padding: const EdgeInsets.all(4),
+                            margin: EdgeInsets.zero,
+                            decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    width: 2,
+                                    color: HexColor.fromHex(
+                                        ConfigProvider.getThemeConfig()
+                                            .primaryThemeForegroundColor))),
+                            child: Tooltip(
+                                message:
+                                    inReviewMode ? "Save" : "Update review",
+                                child: SvgPicture.asset('assets/icons/ai.svg',
+                                    height: 18, width: 18))),
                         isShortPlan)
                     : const SizedBox()
               ],
@@ -411,7 +469,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
 
   enableReviewTapped(String planId, int? updatedCount) {
     if (updatedCount != null && updatedCount >= 3) {
-      showMessageDialog("", "You can only edit a review for 3 times", context);
+      //showMessageDialog("", "You can only edit a review for 3 times", context);
       return;
     }
     _reviewing.remove(planId);

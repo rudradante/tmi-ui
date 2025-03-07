@@ -40,7 +40,6 @@ class PlanReview {
     var response = await Server.update(
         '/plan/review', {}, jsonEncode(planReview), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      print(response.body);
       return PlanReview.fromJson(jsonDecode(response.body), planReview.planId,
           reviewId: planReview.reviewId);
     }

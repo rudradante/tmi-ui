@@ -304,13 +304,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   Future chooseStartTimeTapped() async {
     var result = await chooseDateAndTime(context, fieldLableText: "Start Time");
     if (result == null) return;
-    if ((plan.endTime.getMillisecondsSinceEpoch() -
-            result.getMillisecondsSinceEpoch()) <
-        15 * 60 * 1000) {
-      showMessageDialog("Invalid duration",
-          "Plan duration cannot be less than 15 minutes", context);
-      return;
-    }
     plan.startTime = result;
     plan.breaks.removeWhere((element) =>
         element.startTime.getMillisecondsSinceEpoch() <=
@@ -324,6 +317,11 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     if (plan.startTime.getMillisecondsSinceEpoch() >=
         plan.endTime.getMillisecondsSinceEpoch()) {
       return "Seems like the start time is ahead or same as end time. Please update the end time";
+    }
+    if ((plan.endTime.getMillisecondsSinceEpoch() -
+            plan.startTime.getMillisecondsSinceEpoch()) <
+        30 * 60 * 1000) {
+      return "Plan duration cannot be less than 30 minutes";
     }
     return null;
   }
@@ -344,13 +342,6 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
         initialDateTime: plan.startTime);
 
     if (result == null) return;
-    if ((result.getMillisecondsSinceEpoch() -
-            plan.startTime.getMillisecondsSinceEpoch()) <
-        15 * 60 * 1000) {
-      showMessageDialog("Invalid duration",
-          "Plan duration cannot be less than 15 minutes", context);
-      return;
-    }
     plan.endTime = result;
     setState(() {});
   }
