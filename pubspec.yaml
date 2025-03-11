@@ -18,6 +18,7 @@ dependencies:
   path_provider: ^2.1.4
   syncfusion_flutter_calendar: ^27.2.4
   flutter_svg: ^2.0.10
+  percent_indicator: ^4.2.4
 
 dev_dependencies:
   flutter_test:
