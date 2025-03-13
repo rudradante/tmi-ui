@@ -93,7 +93,6 @@ class TmiDateTime {
     var d2 = DateTime(d.year, d.month, d.day);
     return TmiDateTime(d2.millisecondsSinceEpoch);
   }
-
   TmiDateTime subtract(Duration duration) {
     return TmiDateTime(this._millisecondsSinceEpoch - duration.inMilliseconds);
   }
