@@ -22,9 +22,12 @@ class TmiDateTime {
     return TimeOfDay(hour: dateTime.hour, minute: dateTime.minute);
   }
 
-  DateTime toDateTime() =>
-      DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch, isUtc: true)
-          .add(Duration(milliseconds: timeZoneOffsetMs));
+  DateTime toDateTime({bool addTimeZoneOffset = true}) => addTimeZoneOffset
+      ? DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch,
+              isUtc: true)
+          .add(Duration(milliseconds: timeZoneOffsetMs))
+      : DateTime.fromMillisecondsSinceEpoch(_millisecondsSinceEpoch,
+          isUtc: true);
 
   String getTimeDifferenceInDuration(TmiDateTime d2) {
     String result = "";
@@ -85,11 +88,30 @@ class TmiDateTime {
     return TmiDateTime(d2.millisecondsSinceEpoch);
   }
 
+  TmiDateTime toMinDate() {
+    var d = toDateTime();
+    var d2 = DateTime(d.year, d.month, d.day);
+    return TmiDateTime(d2.millisecondsSinceEpoch);
+  }
   TmiDateTime subtract(Duration duration) {
     return TmiDateTime(this._millisecondsSinceEpoch - duration.inMilliseconds);
   }
 
   TmiDateTime add(Duration duration) {
     return TmiDateTime(this._millisecondsSinceEpoch + duration.inMilliseconds);
+  }
+
+  static List<TmiDateTime> getStartAndEndOfWeek(TmiDateTime dateTime) {
+    var date = DateTime.fromMillisecondsSinceEpoch(
+        dateTime._millisecondsSinceEpoch,
+        isUtc: false);
+    int differenceToStart = date.weekday;
+    int daysToSubtract = differenceToStart % 7;
+    DateTime startOfWeek = date.subtract(Duration(days: daysToSubtract));
+    DateTime endOfWeek = startOfWeek.add(Duration(days: 6));
+    return [
+      TmiDateTime(startOfWeek.millisecondsSinceEpoch),
+      TmiDateTime(endOfWeek.millisecondsSinceEpoch)
+    ];
   }
 }

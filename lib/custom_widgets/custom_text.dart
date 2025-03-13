@@ -16,6 +16,7 @@ class CustomText extends StatelessWidget {
   final int? maxLines;
   final bool highlight;
   final bool wrap;
+  final FontWeight? fontWeight;
   final TextStyle? textStyle;
   const CustomText(
       {Key? key,
@@ -28,6 +29,7 @@ class CustomText extends StatelessWidget {
       this.selectable = false,
       this.wrap = true,
       this.highlight = false,
+      this.fontWeight,
       this.maxLines,
       this.textStyle})
       : super(key: key);
@@ -46,7 +48,8 @@ class CustomText extends StatelessWidget {
                             color ?? HexColor.fromHex(theme.contentTextColor),
                         decoration:
                             underlined ? TextDecoration.underline : null,
-                        fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: fontWeight ??
+                            (bold ? FontWeight.bold : FontWeight.normal),
                         fontSize: (size == null
                             ? sf.textSize
                             : size ?? theme.primaryTextSize * sf.cf),
@@ -78,7 +81,8 @@ class CustomText extends StatelessWidget {
                     decorationColor:
                         color ?? HexColor.fromHex(theme.contentTextColor),
                     decoration: underlined ? TextDecoration.underline : null,
-                    fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: fontWeight ??
+                        (bold ? FontWeight.bold : FontWeight.normal),
                     fontSize: (size == null
                         ? sf.textSize
                         : size ?? theme.primaryTextSize * sf.cf),

@@ -10,13 +10,15 @@ class CustomFlatButton extends StatelessWidget {
   final Color color;
   final bool isOutlined;
   final bool elevated;
+  final Color? outlineColor;
   const CustomFlatButton(
       {Key? key,
       this.onTap,
       required this.text,
       this.isOutlined = false,
       required this.color,
-      this.elevated = false})
+      this.elevated = false,
+      this.outlineColor})
       : super(key: key);
 
   @override
@@ -38,7 +40,11 @@ class CustomFlatButton extends StatelessWidget {
                 ]
               : null,
           color: isOutlined ? Colors.transparent : color,
-          border: !isOutlined ? null : Border.all(width: 0.5, color: color),
+          border: (!isOutlined && outlineColor == null)
+              ? null
+              : Border.all(
+                  width: outlineColor == null ? 0.5 : 2,
+                  color: outlineColor ?? color),
           borderRadius: BorderRadius.circular((theme.primaryTextSize) * sf.cf)),
       child: CustomText(
           text: text,

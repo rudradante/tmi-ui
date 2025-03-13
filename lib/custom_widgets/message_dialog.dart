@@ -13,8 +13,8 @@ class MessageDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: SelectableText(this.title),
-      content: SelectableText(this.message),
+      title: SelectableText(title),
+      content: SelectableText(message),
       actions: [
         CustomTextButton(
             onPressed: () {

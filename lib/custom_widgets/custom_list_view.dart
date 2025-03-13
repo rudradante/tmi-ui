@@ -57,7 +57,7 @@ class CustomStaticListView extends StatelessWidget {
     return Container(
       constraints:
           BoxConstraints(maxWidth: sf.size.width, maxHeight: sf.size.height),
-      child: children.length == 0
+      child: children.isEmpty
           ? const EmptyImageWidget()
           : ListView(
               controller: controller,

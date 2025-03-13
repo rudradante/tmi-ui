@@ -2,12 +2,14 @@ import 'package:flutter/foundation.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
+int _idCounter = DateTime.now().millisecondsSinceEpoch;
+
 class PlanBreak {
   String id = "";
   final TmiDateTime startTime, endTime;
 
   PlanBreak(this.startTime, this.endTime) {
-    id = UniqueKey().toString();
+    id = (_idCounter++).toString();
   }
 
   static PlanBreak fromJson(Map<String, dynamic> json) {
@@ -23,10 +25,10 @@ class PlanBreak {
     if (breakStartTime >= breakEndTime) {
       return "Break interval must be a least a minute long";
     }
-    if (breakStartTime <= planStartTime ||
-        breakStartTime >= planEndTime ||
-        breakEndTime <= planStartTime ||
-        breakEndTime >= planEndTime) {
+    if (breakStartTime < planStartTime ||
+        breakStartTime > planEndTime ||
+        breakEndTime < planStartTime ||
+        breakEndTime > planEndTime) {
       return "Break intervals must be within plan duration";
     }
     return null;

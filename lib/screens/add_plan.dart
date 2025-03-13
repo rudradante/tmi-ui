@@ -1,4 +1,5 @@
 // ignore_for_file: use_build_context_synchronously, unused_import
+import "dart:async";
 import "dart:convert";
 
 import "package:file_picker/file_picker.dart";
@@ -7,6 +8,7 @@ import "package:flutter/material.dart";
 import "package:tmiui/config/config_provider.dart";
 import "package:tmiui/config/theme.dart";
 import "package:tmiui/custom_widgets/custom_column.dart";
+import "package:tmiui/custom_widgets/custom_dialog.dart";
 import "package:tmiui/custom_widgets/custom_flat_button.dart";
 import "package:tmiui/custom_widgets/custom_list_view.dart";
 import "package:tmiui/custom_widgets/custom_snackbar.dart";
@@ -33,10 +35,19 @@ import "../helpers/date_time.dart";
 import "../models.dart/plan_break.dart";
 
 class AddOrUpdatePlan extends StatefulWidget {
-  const AddOrUpdatePlan(this.plan, this.newPlanAdded, {Key? key})
+  const AddOrUpdatePlan(this.plan, this.newPlanAdded,
+      {Key? key,
+      this.fullyEditable = true,
+      this.notEditable = false,
+      this.onlyTimeEditable = false,
+      this.elevatedContainer = true})
       : super(key: key);
   final void Function(Plan) newPlanAdded;
   final Plan plan;
+  final bool fullyEditable;
+  final bool notEditable;
+  final bool onlyTimeEditable;
+  final bool elevatedContainer;
 
   @override
   State<AddOrUpdatePlan> createState() => _AddOrUpdatePlanState();
@@ -46,10 +57,12 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   Plan plan = Plan.newPlan();
+  bool isNewPlan = false;
   @override
   void initState() {
     super.initState();
     plan = widget.plan;
+    isNewPlan = plan.isNewPlan();
     _titleController.text = widget.plan.title;
     _descriptionController.text = widget.plan.description;
   }
@@ -58,7 +71,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   Widget build(BuildContext context) {
     var sf = calculateScreenFactors(context);
     var theme = ConfigProvider.getThemeConfig();
-    var elevatedContainer = true;
+    var elevatedContainer = widget.elevatedContainer;
     return SizedBox(
       width: 400 * sf.cf,
       child: CustomColumn(
@@ -68,12 +81,13 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           GroupingContainer(
               elevated: elevatedContainer,
               label: "Plan Details",
-              subtitle: "Add details about the task you are adding",
+              subtitle: "Add details of the task",
               child: CustomColumn(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   CustomTextField(
+                    readOnly: widget.notEditable || widget.onlyTimeEditable,
                     controller: _titleController,
                     hintText: "Title",
                   ),
@@ -81,6 +95,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                     height: 8,
                   ),
                   CustomTextField(
+                    readOnly: widget.notEditable || widget.onlyTimeEditable,
                     controller: _descriptionController,
                     maxLines: 10,
                     hintText: "Add any other notes or description for the task",
@@ -90,98 +105,114 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           GroupingContainer(
               label: "References",
               height: 250,
-              leading: PopupMenuButton<String>(
-                onSelected: addReferenceTapped,
-                itemBuilder: (context) => ["Web link", "Local file"]
-                    .map((e) => PopupMenuItem<String>(
-                          value: e,
-                          child: CustomText(text: e),
-                        ))
-                    .toList(),
-                child: CustomFlatButton(
-                    text: "Add",
-                    color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
-              ),
+              leading: widget.notEditable || widget.onlyTimeEditable
+                  ? const SizedBox()
+                  : PopupMenuButton<String>(
+                      onSelected: addReferenceTapped,
+                      itemBuilder: (context) => ["Web link", "Local file"]
+                          .map((e) => PopupMenuItem<String>(
+                                value: e,
+                                child: CustomText(text: e),
+                              ))
+                          .toList(),
+                      child: CustomFlatButton(
+                          text: "Add",
+                          color: HexColor.fromHex(
+                              theme.primaryThemeForegroundColor)),
+                    ),
               subtitle: "Add local or web locations of files",
               elevated: elevatedContainer,
               child: CustomListView(
                   itemBuilder: (context, i) {
-                    return CustomRow(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Tooltip(
-                          preferBelow: true,
-                          message: plan.planReferences[i].hyperlink,
-                          child: InkWell(
-                            onTap: () => referenceTapped(
-                                plan.planReferences[i].hyperlink),
-                            child: CustomText(
-                                align: TextAlign.left,
-                                text: plan.planReferences[i].description,
-                                color: Colors.lightBlue,
-                                underlined: true),
-                          ),
-                        ),
-                        IconButton(
-                            onPressed: () => deleteReferenceTapped(
-                                plan.planReferences[i].planReferenceId),
-                            icon: const Icon(
-                              Icons.remove,
-                              color: Colors.red,
-                            ))
-                      ],
+                    return Tooltip(
+                      preferBelow: true,
+                      message: plan.planReferences[i].hyperlink,
+                      child: ListTile(
+                        onTap: () =>
+                            referenceTapped(plan.planReferences[i].hyperlink),
+                        title: CustomText(
+                            align: TextAlign.left,
+                            text: plan.planReferences[i].description,
+                            color: Colors.lightBlue,
+                            underlined: true),
+                        trailing: widget.notEditable || widget.onlyTimeEditable
+                            ? const SizedBox()
+                            : IconButton(
+                                onPressed: () => deleteReferenceTapped(
+                                    plan.planReferences[i].planReferenceId),
+                                icon: const Icon(
+                                  Icons.remove,
+                                  color: Colors.red,
+                                )),
+                      ),
                     );
                   },
                   itemCount: plan.planReferences.length)),
           GroupingContainer(
               elevated: elevatedContainer,
               label: "Schedule",
-              subtitle: "Choose when you start and end this task",
-              leading: CustomFlatButton(
-                  onTap: () {},
-                  text:
-                      plan.startTime.getTimeDifferenceInDuration(plan.endTime),
-                  color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
+              subtitle: "Choose when you start and end this task (Local Time)",
+              leading: isNewPlan
+                  ? null
+                  : CustomFlatButton(
+                      isOutlined: widget.notEditable,
+                      onTap: () {},
+                      text: plan.startTime
+                          .getTimeDifferenceInDuration(plan.endTime),
+                      color:
+                          HexColor.fromHex(theme.primaryThemeForegroundColor)),
               child: CustomRow(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CustomColumn(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const CustomText(text: "Starts from"),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      CustomFlatButton(
-                          isOutlined: true,
-                          onTap: chooseStartTimeTapped,
-                          text:
-                              "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
-                          color: HexColor.fromHex(
-                              theme.primaryThemeForegroundColor))
-                    ],
+                  Expanded(
+                    child: CustomColumn(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const CustomText(text: "Starts from"),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        CustomFlatButton(
+                            isOutlined: true,
+                            onTap: widget.notEditable
+                                ? () {}
+                                : chooseStartTimeTapped,
+                            text:
+                                "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
+                            color: widget.notEditable
+                                ? Colors.grey
+                                : HexColor.fromHex(
+                                    theme.primaryThemeForegroundColor))
+                      ],
+                    ),
                   ),
-                  CustomColumn(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const CustomText(text: "Ends at"),
-                      const SizedBox(
-                        height: 4,
-                      ),
-                      CustomFlatButton(
-                          isOutlined: true,
-                          onTap: chooseEndTimeTapped,
-                          text:
-                              "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
-                          color: HexColor.fromHex(
-                              theme.primaryThemeForegroundColor))
-                    ],
+                  Expanded(
+                    child: CustomColumn(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const CustomText(text: "Ends at"),
+                        const SizedBox(
+                          height: 4,
+                        ),
+                        CustomFlatButton(
+                            isOutlined: true,
+                            onTap: widget.notEditable
+                                ? () {}
+                                : chooseEndTimeTapped,
+                            text:
+                                "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
+                            color: widget.notEditable
+                                ? Colors.grey
+                                : HexColor.fromHex(
+                                    theme.primaryThemeForegroundColor))
+                      ],
+                    ),
                   )
                 ],
               )),
           PlanBreaks(
+            elevatedContainer: widget.elevatedContainer,
+            isEditable: !widget.notEditable,
             key: UniqueKey(),
             breaksUpdated: (breaks) => setState(() {
               breaks.sort((a, b) => a.startTime
@@ -191,19 +222,21 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
             }),
             plan: plan,
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: CustomRow(mainAxisSize: MainAxisSize.max, children: [
-              Expanded(
-                child: CustomFlatButton(
-                  elevated: true,
-                  onTap: saveButtonTapped,
-                  color: HexColor.fromHex(theme.primaryButtonColor),
-                  text: "Save",
-                ),
-              ),
-            ]),
-          )
+          widget.notEditable
+              ? const SizedBox()
+              : Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: CustomRow(mainAxisSize: MainAxisSize.max, children: [
+                    Expanded(
+                      child: CustomFlatButton(
+                          elevated: true,
+                          onTap: saveButtonTapped,
+                          color: HexColor.fromHex(theme.primaryButtonColor),
+                          text: "Save",
+                          outlineColor: Colors.white),
+                    ),
+                  ]),
+                )
         ],
       ),
     );
@@ -280,21 +313,26 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
-  void showStartEndTimeValidationIfApplicable() {
+  String? showStartEndTimeValidationIfApplicable() {
     if (plan.startTime.getMillisecondsSinceEpoch() >=
         plan.endTime.getMillisecondsSinceEpoch()) {
-      showSnackBarMessage(context,
-          "Seems like the start time is ahead or same as end time. Please update the end time");
+      return "Seems like the start time is ahead or same as end time. Please update the end time";
     }
+    if ((plan.endTime.getMillisecondsSinceEpoch() -
+            plan.startTime.getMillisecondsSinceEpoch()) <
+        30 * 60 * 1000) {
+      return "Plan duration cannot be less than 30 minutes";
+    }
+    return null;
   }
 
-  void showBreakTimingValidationWithRespectToPlanIfApplicable() {
+  String? showBreakTimingValidationWithRespectToPlanIfApplicable() {
     var idx = plan.breaks.indexWhere(
         (e) => PlanBreak.validateBreakTimingsWithPlan(plan, e) != null);
     if (idx >= 0) {
-      showSnackBarMessage(context,
-          PlanBreak.validateBreakTimingsWithPlan(plan, plan.breaks[idx]) ?? "");
+      return PlanBreak.validateBreakTimingsWithPlan(plan, plan.breaks[idx]);
     }
+    return null;
   }
 
   Future chooseEndTimeTapped() async {
@@ -302,11 +340,10 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
         fieldLableText: "End Time",
         firstDateTime: plan.startTime,
         initialDateTime: plan.startTime);
+
     if (result == null) return;
     plan.endTime = result;
     setState(() {});
-    showStartEndTimeValidationIfApplicable();
-    showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
   saveButtonTapped() async {
@@ -319,22 +356,57 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           "Start time of the plan cannot be ahead of end time", context);
       return;
     }
+    if (plan.endTime
+            .getMillisecondsSinceEpoch()
+            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
+        0) {
+      await showMessageDialog(
+          "Invalid time", "Plan cannot be set in past", context);
+      return;
+    }
+    String? validationError = showStartEndTimeValidationIfApplicable() ??
+        showBreakTimingValidationWithRespectToPlanIfApplicable();
+    if (validationError != null) {
+      await showMessageDialog("Invalid time", validationError, context);
+      return;
+    }
     var requestPlan = plan;
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();
     Plan? result;
-    print(jsonEncode(requestPlan));
-    if (int.tryParse(plan.planId) != null) {
+    if (isNewPlan) {
       result = await Plan.createPlan(requestPlan, context);
     } else {
       result = await Plan.updatePlan(requestPlan, context);
     }
     if (result == null) return;
-    plan = result;
-    if (Navigator.canPop(context)) {
-      Navigator.pop(context);
-    }
-    widget.newPlanAdded(plan);
+    bool showingSavedDialog = true;
+    Timer closedDialogTimer = Timer(const Duration(seconds: 2), () {
+      if (showingSavedDialog && Navigator.canPop(context)) {
+        Navigator.pop(context);
+        showingSavedDialog = false;
+      }
+    });
+    showDialog(
+        barrierDismissible: true,
+        context: context,
+        builder: (context) => Center(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white,
+                ),
+                width: 100,
+                height: 100,
+                padding: const EdgeInsets.all(16),
+                child: const Icon(Icons.done, color: Colors.brown, size: 64),
+              ),
+            )).then((value) {
+      showingSavedDialog = false;
+      closedDialogTimer.cancel();
+      plan = result!;
+      widget.newPlanAdded(plan);
+    });
   }
 
   void referenceTapped(String url) async {
@@ -348,8 +420,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
 
 class PlanBreaks extends StatefulWidget {
   final Plan plan;
+  final bool isEditable;
   final Function(List<PlanBreak>) breaksUpdated;
-  const PlanBreaks({Key? key, required this.plan, required this.breaksUpdated})
+  final bool elevatedContainer;
+  const PlanBreaks(
+      {Key? key,
+      required this.plan,
+      required this.breaksUpdated,
+      required this.isEditable,
+      this.elevatedContainer = true})
       : super(key: key);
 
   @override
@@ -371,22 +450,25 @@ class _PlanBreaksState extends State<PlanBreaks> {
         .getMillisecondsSinceEpoch()
         .compareTo(b.startTime.getMillisecondsSinceEpoch()));
     return GroupingContainer(
-        leading: PopupMenuButton<String>(
-          onSelected: breakOptionSelected,
-          itemBuilder: (context) =>
-              ["Use pomodoro", "Custom break", "Clear all"]
-                  .map((e) => PopupMenuItem<String>(
-                        value: e,
-                        child: CustomText(text: e),
-                      ))
-                  .toList(),
-          child: CustomFlatButton(
-              text: "Manage",
-              color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
-        ),
-        elevated: true,
+        leading: !widget.isEditable
+            ? const SizedBox()
+            : PopupMenuButton<String>(
+                onSelected: breakOptionSelected,
+                itemBuilder: (context) =>
+                    ["Use pomodoro", "Custom break", "Clear all"]
+                        .map((e) => PopupMenuItem<String>(
+                              value: e,
+                              child: CustomText(text: e),
+                            ))
+                        .toList(),
+                child: CustomFlatButton(
+                    text: "Manage",
+                    color: HexColor.fromHex(theme.primaryThemeForegroundColor)),
+              ),
+        elevated: widget.elevatedContainer,
         label: "Breaks",
-        subtitle: "Take breaks to increase efficiency",
+        subtitle:
+            "Take breaks within the duration of task to increase efficiency (Local Time)",
         child: CustomColumn(
           mainAxisSize: MainAxisSize.min,
           children: breaks
@@ -399,20 +481,26 @@ class _PlanBreaksState extends State<PlanBreaks> {
                             CustomFlatButton(
                                 text: e.startTime.getTimeAsString(),
                                 isOutlined: true,
-                                color: Colors.green),
+                                color: widget.isEditable
+                                    ? Colors.green
+                                    : Colors.grey),
                             CustomText(
                                 text: e.startTime
                                     .getTimeDifferenceInDuration(e.endTime)),
                             CustomFlatButton(
                                 isOutlined: true,
                                 text: e.endTime.getTimeAsString(),
-                                color: Colors.green),
+                                color: widget.isEditable
+                                    ? Colors.green
+                                    : Colors.grey),
                           ],
                         ),
                       ),
-                      IconButton(
-                          onPressed: () => removeBreakTapped(e),
-                          icon: const Icon(Icons.remove, color: Colors.red))
+                      !widget.isEditable
+                          ? const SizedBox()
+                          : IconButton(
+                              onPressed: () => removeBreakTapped(e),
+                              icon: const Icon(Icons.remove, color: Colors.red))
                     ],
                   ))
               .toList(),
@@ -503,16 +591,48 @@ class _PlanBreaksState extends State<PlanBreaks> {
 
 class AddOrUpdatePlanRoute {
   static void push(
-      BuildContext context, Plan plan, void Function(Plan) onNewPlanAdded) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => CustomScaffold(
-                  title: "Let's add a plan",
-                  appBarTitleSize: 32,
-                  scaffoldBackgroundColor: HexColor.fromHex(
-                      ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
-                  centerWidget: AddOrUpdatePlan(plan, onNewPlanAdded),
-                )));
+      BuildContext context, Plan plan, void Function(Plan) onNewPlanAdded,
+      {bool fullyEditable = true,
+      bool notEditable = false,
+      bool onlyTimeEditable = false,
+      bool forceDialog = false,
+      String? title}) {
+    var sf = calculateScreenFactors(context);
+    if (plan.startTime.getMillisecondsSinceEpoch() <=
+        TmiDateTime.now().getMillisecondsSinceEpoch()) {
+      notEditable = true;
+    }
+    if (sf.maxComponents > 2 && forceDialog) {
+      showCustomDialog(
+          title ?? (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+          AddOrUpdatePlan(
+            plan,
+            onNewPlanAdded,
+            fullyEditable: fullyEditable,
+            notEditable: notEditable,
+            onlyTimeEditable: onlyTimeEditable,
+            elevatedContainer: false,
+          ),
+          context);
+    } else {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => CustomScaffold(
+                    title: title ??
+                        (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+                    appBarTitleSize: 32,
+                    scaffoldBackgroundColor: HexColor.fromHex(
+                        ConfigProvider.getThemeConfig()
+                            .scaffoldBackgroundColor),
+                    centerWidget: AddOrUpdatePlan(
+                      plan,
+                      onNewPlanAdded,
+                      fullyEditable: fullyEditable,
+                      notEditable: notEditable,
+                      onlyTimeEditable: onlyTimeEditable,
+                    ),
+                  )));
+    }
   }
 }

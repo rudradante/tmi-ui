@@ -22,7 +22,7 @@ class CustomRow extends StatelessWidget {
           children.isEmpty ? MainAxisAlignment.center : mainAxisAlignment,
       crossAxisAlignment: crossAxisAlignment,
       mainAxisSize: mainAxisSize,
-      children: children.isEmpty ? [EmptyImageWidget()] : children,
+      children: children.isEmpty ? [const EmptyImageWidget()] : children,
     );
   }
 }

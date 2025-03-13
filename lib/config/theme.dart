@@ -13,6 +13,9 @@ class ThemeConfig {
   String inactiveTextColor = 'E5E5E5';
   int primaryTextSize = 14;
   int secondaryTextSize = 12;
+  String primaryScheduleCardColor = '20B2AA';
+  String secondaryScheduleCardColor = '008B8B';
+  String pastScheduleCardColor = '778899';
   static double referenceScreenWidth = 360;
   static double referenceScreenHeight = 640;
 
@@ -27,7 +30,10 @@ class ThemeConfig {
       this.primaryTextSize,
       this.secondaryTextSize,
       this.contentTextColor,
-      this.inactiveTextColor);
+      this.inactiveTextColor,
+      this.primaryScheduleCardColor,
+      this.secondaryScheduleCardColor,
+      this.pastScheduleCardColor);
 
   static ThemeConfig fromJson(Map<String, dynamic> json) {
     return ThemeConfig(
@@ -41,7 +47,10 @@ class ThemeConfig {
         int.parse(json['primaryTextSize'].toString()),
         int.parse(json['secondaryTextSize'].toString()),
         json['contentTextColor'],
-        json['inactiveTextColor']);
+        json['inactiveTextColor'],
+        json['primaryScheduleCardColor'],
+        json['secondaryScheduleCardColor'],
+        json['pastScheduleCardColor']);
   }
 }
 

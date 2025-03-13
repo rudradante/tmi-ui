@@ -1,11 +1,13 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tmiui/models.dart/base_table.dart';
 import 'package:tmiui/models.dart/login_user.dart';
 import 'package:tmiui/models.dart/plan_break.dart';
 import 'package:tmiui/models.dart/plan_note.dart';
 import 'package:tmiui/models.dart/plan_references.dart';
+import 'package:tmiui/models.dart/plan_review.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
 import '../server/request.dart';
@@ -16,6 +18,7 @@ class Plan extends BaseTable {
   List<PlanReference> planReferences;
   List<PlanBreak> breaks;
   List<PlanNote> planNotes;
+  PlanReview? review;
 
   Plan(
       TmiDateTime createdOn,
@@ -30,11 +33,15 @@ class Plan extends BaseTable {
       this.userId,
       this.planReferences,
       this.breaks,
-      this.planNotes)
+      this.planNotes,
+      this.review)
       : super(createdBy, updatedBy, createdOn, updatedOn) {
     breaks.sort((a, b) => a.startTime
         .getMillisecondsSinceEpoch()
         .compareTo(b.startTime.getMillisecondsSinceEpoch()));
+    planNotes.sort((a, b) => a.createdOn
+        .getMillisecondsSinceEpoch()
+        .compareTo(b.createdOn.getMillisecondsSinceEpoch()));
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
@@ -58,25 +65,30 @@ class Plan extends BaseTable {
         (json['notes'] as List<dynamic>)
             .map((e) => PlanNote.fromJson(
                 (e as Map<String, dynamic>), json['planId'] ?? ""))
-            .toList());
+            .toList(),
+        (json['review'] == null
+            ? null
+            : PlanReview.fromJson(json['review'], json['planId'])));
   }
 
   static Plan newPlan() {
     return Plan(
-        TmiDateTime(DateTime.now().millisecondsSinceEpoch),
-        TmiDateTime(DateTime.now().millisecondsSinceEpoch),
+        TmiDateTime(DateTime.now().millisecondsSinceEpoch + 3600000),
+        TmiDateTime(DateTime.now().millisecondsSinceEpoch + 7200000),
         LoginUser.currentLoginUser.userId,
         LoginUser.currentLoginUser.userId,
         "",
         "",
-        TmiDateTime.now(),
         TmiDateTime(
             TmiDateTime.now().getMillisecondsSinceEpoch() + 3600 * 1000),
+        TmiDateTime(
+            TmiDateTime.now().getMillisecondsSinceEpoch() + 7200 * 1000),
         TmiDateTime.now().getMillisecondsSinceEpoch().toString(),
         LoginUser.currentLoginUser.userId,
         [],
         [],
-        []);
+        [],
+        null);
   }
 
   Map<String, dynamic> toJson() {
@@ -98,11 +110,7 @@ class Plan extends BaseTable {
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      try {
-        return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
-      } catch (err) {
-        print(err);
-      }
+      return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
     }
     return null;
   }
@@ -113,30 +121,29 @@ class Plan extends BaseTable {
       try {
         return plan;
       } catch (err) {
-        print(err);
+        if (kDebugMode) {
+          print(err);
+        }
       }
     }
     return null;
   }
 
   static Future<List<Plan>> getAllPlans(
-      TmiDateTime dateTime, BuildContext context) async {
-    print(dateTime.getMillisecondsSinceEpoch());
-    var response = await Server.get(
-        '/plan/date/${dateTime.getMillisecondsSinceEpoch()}', {}, context);
+      TmiDateTime? dateTime, BuildContext context) async {
+    var url = '/plan';
+    if (dateTime != null) {
+      url += '/date/${dateTime.getMillisecondsSinceEpoch()}';
+    }
+    var response = await Server.get(url, {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       var responseJson = jsonDecode(response.body);
-      try {
-        var results = (responseJson as List<dynamic>)
-            .map((e) => Plan.fromJson(e))
-            .toList();
-        results.sort((a, b) => a.startTime
-            .getMillisecondsSinceEpoch()
-            .compareTo(b.endTime.getMillisecondsSinceEpoch()));
-        return results;
-      } catch (err) {
-        print(err);
-      }
+      var results =
+          (responseJson as List<dynamic>).map((e) => Plan.fromJson(e)).toList();
+      results.sort((a, b) => a.startTime
+          .getMillisecondsSinceEpoch()
+          .compareTo(b.endTime.getMillisecondsSinceEpoch()));
+      return results;
     }
     return [];
   }
@@ -145,4 +152,6 @@ class Plan extends BaseTable {
     var response = await Server.delete('/plan/$planId', {}, context);
     return Server.isSuccessHttpCode(response.statusCode);
   }
+
+  bool isNewPlan() => int.tryParse(planId) != null;
 }

@@ -2,7 +2,7 @@
   "environment": "dev",
   "server": {
     "baseUrl": {
-      "dev": "44ad-103-70-44-235.ngrok-free.app"
+      "dev": "8c50-2401-4900-1c68-3648-711f-8a06-9c38-f9e3.ngrok-free.app"
     },
     "port": {
       "dev": "443"
@@ -13,16 +13,19 @@
   },
   "theme": {
     "primaryThemeBackgroundColor": "1B89A1",
-    "primaryThemeForegroundColor": "F2B866",
+    "primaryThemeForegroundColor": "9d6055",
     "primaryThemeTextColor": "FFFFFF",
     "primaryTextSize": "14",
     "secondaryTextSize": "12",
     "appBarBackgroundColor": "1B89A1",
     "appBarForegroundColor": "FFFFFF",
     "scaffoldBackgroundColor": "1B89A1",
-    "primaryButtonColor": "7A80A6",
+    "primaryButtonColor": "9d6055",
     "inactiveTextColor": "CE9B9B",
-    "contentTextColor": "000000"
+    "contentTextColor": "000000",
+    "pastScheduleCardColor": "778899",
+    "secondaryScheduleCardColor": "1B89A1",
+    "primaryScheduleCardColor": "055d70"
   },
   "app":{
     "timeZoneOffset": "19800"

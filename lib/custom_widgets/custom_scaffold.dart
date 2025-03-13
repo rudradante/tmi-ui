@@ -24,7 +24,9 @@ class CustomScaffold extends StatefulWidget {
   final String sideMenuOptionTitle, metaWidgetOptionTitle, title;
   final Function()? onMetaWidgetTapped;
   final Color scaffoldBackgroundColor;
+  final Color? appBarBackgroundColor;
   final bool showBackButton;
+  final BottomAppBar? bottomAppBar;
 
   const CustomScaffold(
       {Key? key,
@@ -45,7 +47,9 @@ class CustomScaffold extends StatefulWidget {
       this.metaWidgetIcon = const Icon(Icons.poll_outlined),
       this.sideMenuIcon = const Icon(
         Icons.menu,
-      )})
+      ),
+      this.appBarBackgroundColor,
+      this.bottomAppBar})
       : super(key: key);
   @override
   State<CustomScaffold> createState() => _CustomScaffoldState();
@@ -68,19 +72,20 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     }
     var theme = ConfigProvider.getThemeConfig();
     AppBar appBar = AppBar(
+      backgroundColor:
+          widget.appBarBackgroundColor ?? widget.scaffoldBackgroundColor,
       elevation: 0,
       actions: actions,
-      title: FittedBox(
-          child: CustomText(
-              textStyle: GoogleFonts.seaweedScript(
-                  textStyle: TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: (widget.appBarTitleSize),
-                      color: HexColor.fromHex(theme.appBarForegroundColor))),
-              text: widget.title,
-              color: HexColor.fromHex(theme.appBarForegroundColor),
-              bold: false,
-              size: widget.appBarTitleSize)),
+      title: CustomText(
+          textStyle: GoogleFonts.seaweedScript(
+              textStyle: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: (widget.appBarTitleSize),
+                  color: HexColor.fromHex(theme.appBarForegroundColor))),
+          text: widget.title,
+          color: HexColor.fromHex(theme.appBarForegroundColor),
+          bold: false,
+          size: widget.appBarTitleSize),
       centerTitle: false,
       leading: widget.showBackButton
           ? IconButton(
@@ -93,13 +98,16 @@ class _CustomScaffoldState extends State<CustomScaffold> {
               ))
           : widget.leadingAppbarWidget,
     );
-    CustomScaffold.bodyHeight =
-        sf.size.height - appBar.preferredSize.height - 32;
+    CustomScaffold.bodyHeight = sf.size.height -
+        appBar.preferredSize.height -
+        (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
+        32;
     return Scaffold(
+      extendBody: true,
       appBar: appBar,
       backgroundColor: widget.scaffoldBackgroundColor,
       floatingActionButton: widget.floatingActionButton,
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: Stack(
         children: [
           SizedBox(
@@ -161,6 +169,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
               ))),
         ],
       ),
+      bottomNavigationBar: widget.bottomAppBar,
     );
   }
 

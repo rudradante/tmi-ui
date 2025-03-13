@@ -9,9 +9,10 @@ class MyPlans extends StatefulWidget {
   final Function(Plan) onPlanSelected;
   final Function(String) onPlanDeleted;
   final String? selectedPlanId;
+  final bool readonly;
   const MyPlans(
       this._plans, this.onPlanSelected, this.onPlanDeleted, this.selectedPlanId,
-      {Key? key})
+      {Key? key, this.readonly = false})
       : super(key: key);
 
   @override
@@ -27,7 +28,8 @@ class _MyPlansState extends State<MyPlans> {
               widget._plans[i],
               widget.onPlanSelected,
               widget.onPlanDeleted,
-              widget._plans[i].planId == widget.selectedPlanId);
+              widget._plans[i].planId == widget.selectedPlanId,
+              widget.readonly);
         },
         itemCount: widget._plans.length);
   }

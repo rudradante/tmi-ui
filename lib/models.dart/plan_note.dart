@@ -29,16 +29,11 @@ class PlanNote {
 
   static Future<PlanNote?> addPlanNote(
       PlanNote planNote, BuildContext context) async {
-    print(jsonEncode(planNote));
     var response =
         await Server.post('/note', {}, jsonEncode(planNote), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      try {
-        planNote.planNoteId = jsonDecode(response.body)['noteId'];
-        return planNote;
-      } catch (err) {
-        print(err);
-      }
+      planNote.planNoteId = jsonDecode(response.body)['noteId'];
+      return planNote;
     }
     return null;
   }
