@@ -101,7 +101,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     CustomScaffold.bodyHeight = sf.size.height -
         appBar.preferredSize.height -
         (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
-        32;
+        getNavBarHeight();
     return Scaffold(
       extendBody: true,
       appBar: appBar,
@@ -176,5 +176,16 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   void openViewSideMenu() {
     showCustomDialog(widget.sideMenuOptionTitle,
         widget.sideMenu ?? const SizedBox(), context);
+  }
+
+  double getNavBarHeight() {
+    double screenSizeH = MediaQuery.of(context).size.height;
+    double physicalSizeH = View.of(context).display.size.height;
+    double devicePixelRatio = View.of(context).display.devicePixelRatio;
+    var result = (physicalSizeH / devicePixelRatio) - screenSizeH;
+    result = MediaQuery.of(context).viewInsets.bottom;
+    print(result);
+
+    return result;
   }
 }
