@@ -298,53 +298,52 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
           ),
           isShortPlan
               ? SizedBox()
-              : wrapInFittedBox(
-                  InkWell(
-                      // padding: EdgeInsets.zero,
-                      // tooltip: ,
-                      onTap: () => inReviewMode
-                          ? widget.onReviewSaved(appointment.planId, percentage)
-                          : enableReviewTapped(appointment.planId,
-                              appointment.review?.updatedCount),
-                      child: Container(
-                        padding: !inReviewMode
-                            ? EdgeInsets.all(8)
-                            : const EdgeInsets.all(4),
-                        margin: EdgeInsets.zero,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                                width: 2,
-                                color:
-                                    (appointment.review?.updatedCount ?? 0) == 3
+              : InkWell(
+                  // padding: EdgeInsets.zero,
+                  // tooltip: ,
+                  onTap: () => inReviewMode
+                      ? widget.onReviewSaved(appointment.planId, percentage)
+                      : enableReviewTapped(
+                          appointment.planId, appointment.review?.updatedCount),
+                  child: Container(
+                    padding: !inReviewMode
+                        ? EdgeInsets.all(10)
+                        : const EdgeInsets.all(4),
+                    margin: EdgeInsets.zero,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                            width: 2,
+                            color: (appointment.review?.updatedCount ?? 0) == 3
+                                ? HexColor.fromHex(
+                                    ConfigProvider.getThemeConfig()
+                                        .inactiveTextColor)
+                                : HexColor.fromHex(
+                                    ConfigProvider.getThemeConfig()
+                                        .primaryThemeForegroundColor))),
+                    child: Tooltip(
+                        message: inReviewMode ? "Save" : "Update review",
+                        child: !inReviewMode
+                            ? wrapInFittedBox(
+                                CustomText(
+                                    fontWeight: FontWeight.w500,
+                                    text:
+                                        (3 - (appointment.review?.updatedCount ?? 0))
+                                            .toString(),
+                                    size: isShortPlan ? 8 : 16,
+                                    color: (appointment.review?.updatedCount ?? 0) == 3
                                         ? HexColor.fromHex(
                                             ConfigProvider.getThemeConfig()
                                                 .inactiveTextColor)
                                         : HexColor.fromHex(
                                             ConfigProvider.getThemeConfig()
-                                                .primaryThemeForegroundColor))),
-                        child: Tooltip(
-                            message: inReviewMode ? "Save" : "Update review",
-                            child: !inReviewMode
-                                ? wrapInFittedBox(
-                                    CustomText(
-                                        fontWeight: FontWeight.w500,
-                                        text: (3 - (appointment.review?.updatedCount ?? 0))
-                                            .toString(),
-                                        size: isShortPlan ? 8 : 16,
-                                        color: (appointment.review?.updatedCount ?? 0) == 3
-                                            ? HexColor.fromHex(
-                                                ConfigProvider.getThemeConfig()
-                                                    .inactiveTextColor)
-                                            : HexColor.fromHex(ConfigProvider.getThemeConfig()
                                                 .primaryThemeForegroundColor)),
-                                    isShortPlan)
-                                : Icon(Icons.check,
-                                    color: HexColor.fromHex(
-                                        ConfigProvider.getThemeConfig()
-                                            .primaryThemeForegroundColor))),
-                      )),
-                  isShortPlan),
+                                isShortPlan)
+                            : Icon(Icons.check,
+                                color: HexColor.fromHex(
+                                    ConfigProvider.getThemeConfig()
+                                        .primaryThemeForegroundColor))),
+                  )),
           const SizedBox(width: 12),
           isShortPlan
               ? SizedBox()
@@ -410,17 +409,17 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
   }
 
   void planDoubleTapped(Plan plan) async {
-    if (!isShortPlan) {
-      AddOrUpdatePlanRoute.push(context, plan, (p0) {},
-          notEditable: true, title: "Plan Details", forceDialog: true);
-      return;
-    }
+    // if (!isShortPlan) {
+    //   AddOrUpdatePlanRoute.push(context, plan, (p0) {},
+    //       notEditable: true, title: "Plan Details", forceDialog: true);
+    //   return;
+    // }
     showDialog(
         context: context,
         builder: (context) =>
             StatefulBuilder(builder: (context, StateSetter setState) {
               return CustomDialog(
-                title: "Add Review",
+                title: "Review",
                 content: ReviewPercentagePicker(
                     percentage: percentage, onChange: (p) => percentage = p),
                 actions: [
