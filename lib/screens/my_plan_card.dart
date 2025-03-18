@@ -195,7 +195,7 @@ class _MyPlanCardState extends State<MyPlanCard> {
     var result = await PlanNote.addPlanNote(newPlanNote, context);
     if (result == null) return;
     _notesController.text = "";
-    widget.plan.planNotes.add(result);
+    widget.plan.planNotes.insert(0, result);
     setState(() {});
   }
 

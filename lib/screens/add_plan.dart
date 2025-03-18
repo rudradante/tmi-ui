@@ -604,7 +604,12 @@ class AddOrUpdatePlanRoute {
     }
     if (sf.maxComponents > 2 && forceDialog) {
       showCustomDialog(
-          title ?? (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+          title ??
+              (plan.isNewPlan()
+                  ? "Let's add a plan"
+                  : notEditable
+                      ? "Plan Details"
+                      : "Update plan"),
           AddOrUpdatePlan(
             plan,
             onNewPlanAdded,
@@ -620,7 +625,11 @@ class AddOrUpdatePlanRoute {
           MaterialPageRoute(
               builder: (context) => CustomScaffold(
                     title: title ??
-                        (plan.isNewPlan() ? "Let's add a plan" : "Update plan"),
+                        (plan.isNewPlan()
+                            ? "Let's add a plan"
+                            : notEditable
+                                ? "Plan Details"
+                                : "Update plan"),
                     appBarTitleSize: 32,
                     scaffoldBackgroundColor: HexColor.fromHex(
                         ConfigProvider.getThemeConfig()

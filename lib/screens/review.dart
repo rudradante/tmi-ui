@@ -184,9 +184,6 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
     _planColors.putIfAbsent(appointment.planId, () => color!);
     var progressColor = color;
     isShortPlan = widget.calendarAppointmentDetails.bounds.height < 30;
-    appointment.endTime.getMillisecondsSinceEpoch() -
-            appointment.startTime.getMillisecondsSinceEpoch() <
-        40 * 60 * 1000;
     return Container(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(0),
@@ -449,7 +446,23 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                   ConfigProvider.getThemeConfig()
                                       .primaryThemeForegroundColor))),
                     ),
-                  )
+                  ),
+                  wrapInFittedBox(
+                      Container(
+                          padding: const EdgeInsets.all(4),
+                          margin: EdgeInsets.zero,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  width: 2,
+                                  color: HexColor.fromHex(
+                                      ConfigProvider.getThemeConfig()
+                                          .primaryThemeForegroundColor))),
+                          child: Tooltip(
+                              message: "AI",
+                              child: SvgPicture.asset('assets/icons/ai.svg',
+                                  height: 18, width: 18))),
+                      isShortPlan)
                 ],
               );
             }));

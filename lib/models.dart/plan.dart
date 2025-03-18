@@ -39,9 +39,9 @@ class Plan extends BaseTable {
     breaks.sort((a, b) => a.startTime
         .getMillisecondsSinceEpoch()
         .compareTo(b.startTime.getMillisecondsSinceEpoch()));
-    planNotes.sort((a, b) => a.createdOn
+    planNotes.sort((a, b) => b.createdOn
         .getMillisecondsSinceEpoch()
-        .compareTo(b.createdOn.getMillisecondsSinceEpoch()));
+        .compareTo(a.createdOn.getMillisecondsSinceEpoch()));
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
