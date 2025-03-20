@@ -1,6 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -50,13 +51,25 @@ class Server {
       response = Response('Cannot connect to server', 500);
       print(e);
     }
-    await showMessageDialog("Hey There!", response.body, context);
+    await showMessageDialog(
+        "Hey There!", parseMessageFromResponse(response.body), context);
     // if (response.statusCode == 401) {
     //   Navigator.pushAndRemoveUntil(
     //       context,
     //       MaterialPageRoute(builder: (context) => LoginPage()),
     //       (route) => false);
     return response;
+  }
+
+  static String parseMessageFromResponse(String body) {
+    try {
+      var jsonDecoded = jsonDecode(body) as List;
+      if (jsonDecoded == null || jsonDecoded.isEmpty) return body;
+      return jsonDecoded[0]['message'] ?? body;
+    } catch (err) {
+      print(err);
+      return body;
+    }
   }
 
   static Future<Response> post(
@@ -91,7 +104,8 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    await showMessageDialog("Hey There!", response.body, context);
+    await showMessageDialog(
+        "Hey There!", parseMessageFromResponse(response.body), context);
     return response;
   }
 
@@ -128,7 +142,8 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    await showMessageDialog("Hey There!", response.body, context);
+    await showMessageDialog(
+        "Hey There!", parseMessageFromResponse(response.body), context);
     return response;
   }
 
@@ -165,7 +180,8 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    await showMessageDialog("Hey There!", response.body, context);
+    await showMessageDialog(
+        "Hey There!", parseMessageFromResponse(response.body), context);
     return response;
   }
 
@@ -216,7 +232,8 @@ class Server {
       request.fields.putIfAbsent('data', () => jsonString);
       response = await Response.fromStream(await request.send());
       if (!Server.isSuccessHttpCode(response.statusCode)) {
-        await showMessageDialog("Hey There!", response.body, context);
+        await showMessageDialog(
+            "Hey There!", parseMessageFromResponse(response.body), context);
       }
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);

@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
@@ -8,6 +11,10 @@ import 'custom_column.dart';
 import 'custom_dialog.dart';
 import 'custom_row.dart';
 import 'custom_text.dart';
+
+double navBarHeight = 0;
+bool _heightNoted = false;
+bool _heightNoting = false;
 
 class CustomScaffold extends StatefulWidget {
   static double bodyHeight = ThemeConfig.referenceScreenHeight;
@@ -101,7 +108,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     CustomScaffold.bodyHeight = sf.size.height -
         appBar.preferredSize.height -
         (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
-        32;
+        96;
     return Scaffold(
       extendBody: true,
       appBar: appBar,
@@ -177,4 +184,13 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     showCustomDialog(widget.sideMenuOptionTitle,
         widget.sideMenu ?? const SizedBox(), context);
   }
+}
+
+Future<double> getNavigationBarHeight(BuildContext context) async {
+  double fullHeight = MediaQuery.of(context).size.height;
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
+  double heightWithoutNav = MediaQuery.of(context).size.height;
+  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
+      overlays: SystemUiOverlay.values);
+  return fullHeight - heightWithoutNav;
 }

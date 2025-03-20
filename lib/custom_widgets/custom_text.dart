@@ -18,6 +18,7 @@ class CustomText extends StatelessWidget {
   final bool wrap;
   final FontWeight? fontWeight;
   final TextStyle? textStyle;
+  final TextOverflow? overflow;
   const CustomText(
       {Key? key,
       required this.text,
@@ -31,7 +32,8 @@ class CustomText extends StatelessWidget {
       this.highlight = false,
       this.fontWeight,
       this.maxLines,
-      this.textStyle})
+      this.textStyle,
+      this.overflow})
       : super(key: key);
 
   @override
@@ -44,6 +46,7 @@ class CustomText extends StatelessWidget {
             style: textStyle ??
                 GoogleFonts.poppins(
                     textStyle: TextStyle(
+                        overflow: overflow,
                         decorationColor:
                             color ?? HexColor.fromHex(theme.contentTextColor),
                         decoration:
@@ -74,7 +77,7 @@ class CustomText extends StatelessWidget {
         maxLines: maxLines,
         softWrap: wrap,
         textAlign: align,
-        //overflow: TextOverflow.ellipsis,
+        overflow: overflow,
         style: textStyle ??
             GoogleFonts.poppins(
                 textStyle: TextStyle(
