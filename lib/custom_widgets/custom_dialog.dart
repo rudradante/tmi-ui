@@ -47,7 +47,9 @@ class CustomDialog extends StatelessWidget {
                       Expanded(
                           child: CustomText(
                         text: title,
+                        overflow: TextOverflow.ellipsis,
                         size: 16,
+                        maxLines: 1,
                         bold: false,
                         color: HexColor.fromHex(theme.appBarForegroundColor),
                         align: TextAlign.left,

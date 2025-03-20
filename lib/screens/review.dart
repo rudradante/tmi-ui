@@ -159,6 +159,7 @@ class ReviewCardWidget extends StatefulWidget {
 class _ReviewCardWidgetState extends State<ReviewCardWidget> {
   int percentage = 0;
   bool isShortPlan = false;
+  bool showActionButtons = true;
 
   @override
   void initState() {
@@ -184,6 +185,10 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
     _planColors.putIfAbsent(appointment.planId, () => color!);
     var progressColor = color;
     isShortPlan = widget.calendarAppointmentDetails.bounds.height < 30;
+    if (widget.calendarAppointmentDetails.bounds.height < 28) {
+      showActionButtons = false;
+    }
+
     return Container(
       margin: EdgeInsets.zero,
       padding: const EdgeInsets.all(0),
@@ -227,19 +232,17 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                               child: Padding(
                                 padding: const EdgeInsets.all(4),
                                 child: inReviewMode
-                                    ? wrapInFittedBox(
-                                        Slider(
-                                          divisions: 100,
-                                          min: 0,
-                                          max: 100,
-                                          label: (percentage).toString(),
-                                          value: (percentage).toDouble(),
-                                          onChanged: (value) {
-                                            percentage = value.round();
-                                            setState(() {});
-                                          },
-                                        ),
-                                        isShortPlan)
+                                    ? Slider(
+                                        divisions: 100,
+                                        min: 0,
+                                        max: 100,
+                                        label: (percentage).toString(),
+                                        value: (percentage).toDouble(),
+                                        onChanged: (value) {
+                                          percentage = value.round();
+                                          setState(() {});
+                                        },
+                                      )
                                     : wrapInFittedBox(
                                         CustomText(
                                           align: TextAlign.left,
@@ -296,7 +299,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
               ),
             ),
           ),
-          isShortPlan
+          !showActionButtons
               ? SizedBox()
               : InkWell(
                   // padding: EdgeInsets.zero,
@@ -306,9 +309,12 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                       : enableReviewTapped(
                           appointment.planId, appointment.review?.updatedCount),
                   child: Container(
-                    padding: !inReviewMode
-                        ? EdgeInsets.all(10)
-                        : const EdgeInsets.all(4),
+                    height: 28,
+                    width: 28,
+                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(4),
+                    //     ? EdgeInsets.all(10)
+                    //:,
                     margin: EdgeInsets.zero,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
@@ -330,7 +336,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                     text:
                                         (3 - (appointment.review?.updatedCount ?? 0))
                                             .toString(),
-                                    size: isShortPlan ? 8 : 16,
+                                    size: 14,
                                     color: (appointment.review?.updatedCount ?? 0) == 3
                                         ? HexColor.fromHex(
                                             ConfigProvider.getThemeConfig()
@@ -338,46 +344,49 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                         : HexColor.fromHex(
                                             ConfigProvider.getThemeConfig()
                                                 .primaryThemeForegroundColor)),
-                                isShortPlan)
+                                true)
                             : Icon(Icons.check,
+                                size: 14,
                                 color: HexColor.fromHex(
                                     ConfigProvider.getThemeConfig()
                                         .primaryThemeForegroundColor))),
                   )),
           const SizedBox(width: 12),
-          isShortPlan
+          !showActionButtons
               ? SizedBox()
               : inReviewMode
-                  ? wrapInFittedBox(
-                      InkWell(
-                          onTap: () => setState(() {
-                                percentage =
-                                    appointment.review?.percentage ?? 0;
-                                _reviewing.remove(appointment.planId);
-                              }),
-                          child: Container(
-                              padding: const EdgeInsets.all(4),
-                              margin: EdgeInsets.zero,
-                              decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                      width: 2,
-                                      color: HexColor.fromHex(
-                                          ConfigProvider.getThemeConfig()
-                                              .primaryThemeForegroundColor))),
-                              child: Tooltip(
-                                  message: "Reset",
-                                  child: Icon(Icons.undo,
-                                      color: HexColor.fromHex(
-                                          ConfigProvider.getThemeConfig()
-                                              .primaryThemeForegroundColor))))),
-                      isShortPlan)
+                  ? InkWell(
+                      onTap: () => setState(() {
+                            percentage = appointment.review?.percentage ?? 0;
+                            _reviewing.remove(appointment.planId);
+                          }),
+                      child: Container(
+                          height: 28,
+                          width: 28,
+                          padding: const EdgeInsets.all(4),
+                          margin: EdgeInsets.zero,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  width: 2,
+                                  color: HexColor.fromHex(
+                                      ConfigProvider.getThemeConfig()
+                                          .primaryThemeForegroundColor))),
+                          child: Tooltip(
+                              message: "Reset",
+                              child: Icon(Icons.undo,
+                                  size: 14,
+                                  color: HexColor.fromHex(
+                                      ConfigProvider.getThemeConfig()
+                                          .primaryThemeForegroundColor)))))
                   : const SizedBox(),
-          isShortPlan
+          !showActionButtons
               ? SizedBox()
               : !inReviewMode
                   ? wrapInFittedBox(
                       Container(
+                          height: 28,
+                          width: 28,
                           padding: const EdgeInsets.all(4),
                           margin: EdgeInsets.zero,
                           decoration: BoxDecoration(
@@ -390,7 +399,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                           child: Tooltip(
                               message: inReviewMode ? "Save" : "Update review",
                               child: SvgPicture.asset('assets/icons/ai.svg',
-                                  height: 18, width: 18))),
+                                  height: 14, width: 14))),
                       isShortPlan)
                   : const SizedBox()
         ],
@@ -416,38 +425,72 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
     // }
     showDialog(
         context: context,
-        builder: (context) =>
-            StatefulBuilder(builder: (context, StateSetter setState) {
-              return CustomDialog(
-                title: "Review",
-                content: ReviewPercentagePicker(
-                    percentage: percentage, onChange: (p) => percentage = p),
-                actions: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.pop(context);
-                      widget.onReviewSaved(plan.planId, percentage);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      margin: EdgeInsets.zero,
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              width: 2,
-                              color: HexColor.fromHex(
-                                  ConfigProvider.getThemeConfig()
-                                      .primaryThemeForegroundColor))),
-                      child: Tooltip(
-                          message: "Save",
-                          child: Icon(Icons.check,
-                              color: HexColor.fromHex(
-                                  ConfigProvider.getThemeConfig()
-                                      .primaryThemeForegroundColor))),
-                    ),
-                  ),
-                  wrapInFittedBox(
+        builder:
+            (context) =>
+                StatefulBuilder(builder: (context, StateSetter setState) {
+                  return CustomDialog(
+                    title: plan.title,
+                    content: ReviewPercentagePicker(
+                        percentage: percentage,
+                        onChange: (p) => percentage = p),
+                    actions: [
+                      InkWell(
+                        onTap: () {
+                          Navigator.pop(context);
+                          widget.onReviewSaved(plan.planId, percentage);
+                        },
+                        child: Container(
+                          height: 28,
+                          width: 28,
+                          padding: const EdgeInsets.all(4),
+                          margin: EdgeInsets.zero,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  width: 2,
+                                  color: HexColor.fromHex(
+                                      ConfigProvider.getThemeConfig()
+                                          .primaryThemeForegroundColor))),
+                          child: Tooltip(
+                              message: "Save",
+                              child: Icon(Icons.check,
+                                  size: 14,
+                                  color: HexColor.fromHex(
+                                      ConfigProvider.getThemeConfig()
+                                          .primaryThemeForegroundColor))),
+                        ),
+                      ),
                       Container(
+                          height: 28,
+                          width: 28,
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.all(4),
+                          margin: EdgeInsets.zero,
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  width: 2,
+                                  color: (plan.review?.updatedCount ?? 0) == 3
+                                      ? HexColor.fromHex(
+                                          ConfigProvider.getThemeConfig()
+                                              .inactiveTextColor)
+                                      : HexColor.fromHex(
+                                          ConfigProvider.getThemeConfig()
+                                              .primaryThemeForegroundColor))),
+                          child: wrapInFittedBox(
+                              CustomText(
+                                  fontWeight: FontWeight.w500,
+                                  text: (3 - (plan.review?.updatedCount ?? 0))
+                                      .toString(),
+                                  size: 14,
+                                  color: (plan.review?.updatedCount ?? 0) == 3
+                                      ? HexColor.fromHex(
+                                          ConfigProvider.getThemeConfig().inactiveTextColor)
+                                      : HexColor.fromHex(ConfigProvider.getThemeConfig().primaryThemeForegroundColor)),
+                              true)),
+                      Container(
+                          height: 28,
+                          width: 28,
                           padding: const EdgeInsets.all(4),
                           margin: EdgeInsets.zero,
                           decoration: BoxDecoration(
@@ -460,11 +503,10 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                           child: Tooltip(
                               message: "AI",
                               child: SvgPicture.asset('assets/icons/ai.svg',
-                                  height: 18, width: 18))),
-                      isShortPlan)
-                ],
-              );
-            }));
+                                  height: 14, width: 14))),
+                    ],
+                  );
+                }));
   }
 }
 
