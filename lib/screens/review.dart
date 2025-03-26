@@ -112,6 +112,20 @@ class _ReviewPlansState extends State<ReviewPlans> {
               );
             })
       ],
+      floatingActionButton: FloatingActionButton(
+        tooltip: "TIMA AI",
+        shape: const CircleBorder(),
+        backgroundColor: HexColor.fromHex(
+            ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
+        onPressed: () {},
+        child: Container(
+            child: SvgPicture.asset(
+          'assets/icons/ai.svg',
+          height: 32,
+          width: 32,
+          color: Colors.white,
+        )),
+      ),
     );
   }
 

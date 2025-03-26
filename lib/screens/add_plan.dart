@@ -314,9 +314,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   String? showStartEndTimeValidationIfApplicable() {
-    if (plan.startTime.getMillisecondsSinceEpoch() >=
-        plan.endTime.getMillisecondsSinceEpoch()) {
-      return "Seems like the start time is ahead or same as end time. Please update the end time";
+    if ((plan.startTime.getMillisecondsSinceEpoch() >
+        plan.endTime.getMillisecondsSinceEpoch())) {
+      return "Start time cannot be after the end time";
+    }
+    if (plan.endTime
+            .getMillisecondsSinceEpoch()
+            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
+        0) {
+      return "Plan cannot be set in past";
     }
     if ((plan.endTime.getMillisecondsSinceEpoch() -
             plan.startTime.getMillisecondsSinceEpoch()) <
@@ -347,23 +353,16 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   saveButtonTapped() async {
-    if (plan.endTime
-            .toDateTime()
-            .millisecondsSinceEpoch
-            .compareTo(plan.startTime.toDateTime().millisecondsSinceEpoch) <=
-        0) {
-      await showMessageDialog("Invalid time",
-          "Start time of the plan cannot be ahead of end time", context);
-      return;
-    }
-    if (plan.endTime
-            .getMillisecondsSinceEpoch()
-            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
-        0) {
-      await showMessageDialog(
-          "Invalid time", "Plan cannot be set in past", context);
-      return;
-    }
+    // if (plan.endTime
+    //         .toDateTime()
+    //         .millisecondsSinceEpoch
+    //         .compareTo(plan.startTime.toDateTime().millisecondsSinceEpoch) <=
+    //     0) {
+    //   await showMessageDialog("Invalid time",
+    //       "Start time of the plan cannot be ahead of end time", context);
+    //   return;
+    // }
+
     String? validationError = showStartEndTimeValidationIfApplicable() ??
         showBreakTimingValidationWithRespectToPlanIfApplicable();
     if (validationError != null) {

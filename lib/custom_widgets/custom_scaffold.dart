@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
@@ -108,7 +109,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     CustomScaffold.bodyHeight = sf.size.height -
         appBar.preferredSize.height -
         (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
-        96;
+        getNavigationBarHeight(context);
     return Scaffold(
       extendBody: true,
       appBar: appBar,
@@ -186,11 +187,10 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   }
 }
 
-Future<double> getNavigationBarHeight(BuildContext context) async {
-  double fullHeight = MediaQuery.of(context).size.height;
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  double heightWithoutNav = MediaQuery.of(context).size.height;
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: SystemUiOverlay.values);
-  return fullHeight - heightWithoutNav;
+int getNavigationBarHeight(BuildContext context) {
+  return kIsWeb
+      ? 0
+      : Platform.isAndroid || Platform.isIOS
+          ? 96
+          : 0;
 }
