@@ -9,7 +9,6 @@ import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/models.dart/plan_review.dart';
-import 'package:tmiui/screens/add_plan.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
@@ -387,7 +386,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                       ConfigProvider.getThemeConfig()
                                           .primaryThemeForegroundColor))),
                           child: Tooltip(
-                              message: "Reset",
+                              message: "Back",
                               child: Icon(Icons.undo,
                                   size: 14,
                                   color: HexColor.fromHex(

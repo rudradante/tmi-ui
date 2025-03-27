@@ -282,14 +282,16 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
       await addWebLink(locationHintText: "File location");
       return;
     }
-    var file = await FilePicker.platform.pickFiles();
+    var file = await FilePicker.platform.pickFiles(allowMultiple: true);
     if (file == null) {
       return;
     }
-    var newReference = PlanReference.newReference(plan.planId);
-    newReference.hyperlink = file.files.single.path!;
-    newReference.description = file.files.single.name;
-    plan.planReferences.add(newReference);
+    for (var f in file.files) {
+      var newReference = PlanReference.newReference(plan.planId);
+      newReference.hyperlink = f.path!;
+      newReference.description = f.name;
+      plan.planReferences.add(newReference);
+    }
     setState(() {});
   }
 
