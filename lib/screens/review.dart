@@ -91,7 +91,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
           )),
       bottomAppBar: getTmiBottomAppBar(context, ScreenType.Review,
           bgColor: HexColor.fromHex(
-              ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
+              ConfigProvider.getThemeConfig().primaryScheduleCardColor),
           fgColor: Colors.white),
       actions: [
         ValueListenableBuilder(

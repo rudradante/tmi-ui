@@ -2,7 +2,7 @@
   "environment": "dev",
   "server": {
     "baseUrl": {
-      "dev": "56e2-2401-4900-1c66-7a5f-dd06-3897-9454-c4ef.ngrok-free.app"
+      "dev": "6916-103-70-45-158.ngrok-free.app"
     },
     "port": {
       "dev": "443"
