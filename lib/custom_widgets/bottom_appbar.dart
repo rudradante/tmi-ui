@@ -49,26 +49,12 @@ BottomAppBar getTmiBottomAppBar(BuildContext context, ScreenType currentScreen,
             () => screenTapped(ScreenType.Review, currentScreen, context),
             fgColor,
             textColor),
-        InkWell(
-          onTap: () => screenTapped(ScreenType.AI, currentScreen, context),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset(
-                'assets/icons/ai.svg',
-                height: 24,
-                width: 24,
-                color: fgColor,
-              ),
-              CustomText(
-                text: "Tima AI",
-                size: 10,
-                color: textColor,
-              )
-            ],
-          ),
-        )
+        BottomAppBarIconButton(
+            "My Account",
+            Icons.person_2_outlined,
+            () => screenTapped(ScreenType.MyAccount, currentScreen, context),
+            fgColor,
+            textColor),
         // BottomAppBarIconButton(
         //     "Tima AI",
         //     Icons.person_2_outlined,

@@ -9,6 +9,7 @@ import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/models.dart/plan_review.dart';
+import 'package:tmiui/screens/ai.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
@@ -116,7 +117,9 @@ class _ReviewPlansState extends State<ReviewPlans> {
         shape: const CircleBorder(),
         backgroundColor: HexColor.fromHex(
             ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
-        onPressed: () {},
+        onPressed: () {
+          AIPlansRoute.push(context, [], (p0) {});
+        },
         child: Container(
             child: SvgPicture.asset(
           'assets/icons/ai.svg',
@@ -246,7 +249,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                 padding: const EdgeInsets.all(4),
                                 child: inReviewMode
                                     ? Slider(
-                                        divisions: 100,
+                                        divisions: 20,
                                         min: 0,
                                         max: 100,
                                         label: (percentage).toString(),
@@ -550,7 +553,7 @@ class _ReviewPercentagePickerState extends State<ReviewPercentagePicker> {
       children: [
         Expanded(
             child: Slider(
-          divisions: 100,
+          divisions: 20,
           min: 0,
           max: 100,
           label: (percentage).toString(),
