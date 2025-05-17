@@ -237,8 +237,9 @@ class MyPlanDateSelector extends StatefulWidget {
   final bool weekView;
   final void Function(TmiDateTime) onDateChanged;
   final TmiDateTime selectedDate;
+  final TmiDateTime? minDate, maxDate;
   const MyPlanDateSelector(this.onDateChanged, this.selectedDate,
-      {Key? key, this.weekView = false})
+      {Key? key, this.weekView = false, this.minDate, this.maxDate})
       : super(key: key);
 
   @override
@@ -247,11 +248,15 @@ class MyPlanDateSelector extends StatefulWidget {
 
 class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
-
+  TmiDateTime minDate = TmiDateTime.nowWithMinDate();
+  TmiDateTime maxDate = TmiDateTime.nowWithMinDate();
   @override
   void initState() {
     super.initState();
     selectedDate = widget.selectedDate;
+    minDate = widget.minDate ?? TmiDateTime(0);
+    maxDate =
+        widget.maxDate ?? TmiDateTime.nowWithMinDate().add(Duration(days: 366));
   }
 
   @override
@@ -266,10 +271,13 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
     return CustomRow(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-            onPressed: previousDateTapped,
-            icon: Icon(Icons.arrow_back_ios_outlined,
-                color: HexColor.fromHex(theme.appBarForegroundColor))),
+        selectedDate.toMinDate().getMillisecondsSinceEpoch() ==
+                minDate.toMinDate().getMillisecondsSinceEpoch()
+            ? SizedBox()
+            : IconButton(
+                onPressed: previousDateTapped,
+                icon: Icon(Icons.arrow_back_ios_outlined,
+                    color: HexColor.fromHex(theme.appBarForegroundColor))),
         InkWell(
           onTap: chooseDateTapped,
           child: CustomText(
@@ -278,10 +286,13 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
             color: HexColor.fromHex(theme.appBarForegroundColor),
           ),
         ),
-        IconButton(
-            onPressed: nextDateTapped,
-            icon: Icon(Icons.arrow_forward_ios_outlined,
-                color: HexColor.fromHex(theme.appBarForegroundColor))),
+        selectedDate.toMinDate().getMillisecondsSinceEpoch() ==
+                maxDate.toMinDate().getMillisecondsSinceEpoch()
+            ? SizedBox()
+            : IconButton(
+                onPressed: nextDateTapped,
+                icon: Icon(Icons.arrow_forward_ios_outlined,
+                    color: HexColor.fromHex(theme.appBarForegroundColor))),
       ],
     );
   }

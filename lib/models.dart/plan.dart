@@ -45,30 +45,36 @@ class Plan extends BaseTable {
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
-    return Plan(
-        TmiDateTime(json['createdOn'] ?? 0),
-        TmiDateTime(json['updatedOn'] ?? 0),
-        json['createdBy'] ?? "",
-        json['updatedBy'] ?? "",
-        json['title'] ?? "",
-        json['description'] ?? "",
-        TmiDateTime(json['startTime'] ?? 0),
-        TmiDateTime(json['endTime'] ?? 0),
-        json['planId'] ?? "",
-        json['userId'] ?? "",
-        (json['planReferences'] as List<dynamic>)
-            .map((e) => PlanReference.fromJson((e as Map<String, dynamic>)))
-            .toList(),
-        (json['breaks'] as List<dynamic>)
-            .map((e) => PlanBreak.fromJson((e as Map<String, dynamic>)))
-            .toList(),
-        (json['notes'] as List<dynamic>)
-            .map((e) => PlanNote.fromJson(
-                (e as Map<String, dynamic>), json['planId'] ?? ""))
-            .toList(),
-        (json['review'] == null
-            ? null
-            : PlanReview.fromJson(json['review'], json['planId'])));
+    try {
+      return Plan(
+          TmiDateTime(json['createdOn'] ?? 0),
+          TmiDateTime(json['updatedOn'] ?? 0),
+          json['createdBy'] ?? "",
+          json['updatedBy'] ?? "",
+          json['title'] ?? "",
+          json['description'] ?? "",
+          TmiDateTime(json['startTime'] ?? 0),
+          TmiDateTime(json['endTime'] ?? 0),
+          json['planId'] ?? "",
+          json['userId'] ?? "",
+          ((json['planReferences'] as List<dynamic>?) ?? [])
+              .map((e) => PlanReference.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+          ((json['breaks'] as List<dynamic>?) ?? [])
+              .map((e) => PlanBreak.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+          ((json['notes'] as List<dynamic>?) ?? [])
+              .map((e) => PlanNote.fromJson(
+                  (e as Map<String, dynamic>), json['planId'] ?? ""))
+              .toList(),
+          (json['review'] == null
+              ? null
+              : PlanReview.fromJson(json['review'], json['planId'])));
+    } catch (err) {
+      print(err);
+      print(json);
+      return Plan.newPlan();
+    }
   }
 
   static Plan newPlan() {
@@ -138,6 +144,25 @@ class Plan extends BaseTable {
     var response = await Server.get(url, {}, context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
       var responseJson = jsonDecode(response.body);
+      var results =
+          (responseJson as List<dynamic>).map((e) => Plan.fromJson(e)).toList();
+      results.sort((a, b) => a.startTime
+          .getMillisecondsSinceEpoch()
+          .compareTo(b.endTime.getMillisecondsSinceEpoch()));
+      return results;
+    }
+    return [];
+  }
+
+  static Future<List<Plan>> getPredictedPlans(
+      TmiDateTime dateTime, BuildContext context) async {
+    var url = '/plan/predict';
+    url += '/${dateTime.getMillisecondsSinceEpoch()}';
+    var response = await Server.get(url, {}, context);
+    if (Server.isSuccessHttpCode(response.statusCode)) {
+      var responseJson = jsonDecode(response.body);
+      print(responseJson);
+      print(response.statusCode);
       var results =
           (responseJson as List<dynamic>).map((e) => Plan.fromJson(e)).toList();
       results.sort((a, b) => a.startTime

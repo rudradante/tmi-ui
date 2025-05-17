@@ -46,12 +46,13 @@ class _AIPlansState extends State<AIPlans> {
     _dateNotifier.value = _calendarController.displayDate!;
     _calendarController.view = CalendarView.day;
     _calendarController.addPropertyChangedListener((p0) {
-      if (p0 == "displayDate") {
-        _dateNotifier.value = _calendarController.displayDate!;
-        //
-        Timer(const Duration(milliseconds: 300),
-            () => _dateNotifier.notifyListeners());
-      }
+      // if (p0 == "displayDate") {
+      //   _dateNotifier.value = _calendarController.displayDate!;
+      //   //
+      //   // Timer(const Duration(milliseconds: 300),
+      //   //     () => _dateNotifier.notifyListeners());
+      //   fetchPlans();
+      // }
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       fetchPlans();
@@ -61,7 +62,7 @@ class _AIPlansState extends State<AIPlans> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: "Tima AI",
+      title: "TiMa AI",
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(
           ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
@@ -103,29 +104,32 @@ class _AIPlansState extends State<AIPlans> {
                           date.getMillisecondsSinceEpoch(),
                           isUtc: false);
                   _dateNotifier.value = _calendarController.displayDate!;
+
+                  fetchPlans();
                 },
                 TmiDateTime(_dateNotifier.value.millisecondsSinceEpoch),
                 weekView: _calendarController.view! == CalendarView.week,
+                minDate: TmiDateTime.nowWithMinDate(),
               );
             })
       ],
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Change view",
-        shape: const CircleBorder(),
-        backgroundColor: HexColor.fromHex(
-            ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
-        onPressed: () {},
-        child: PopupMenuButton<String>(
-            tooltip: "Change view",
-            icon: const Icon(Icons.calendar_view_day, color: Colors.white),
-            onSelected: viewOptionSelected,
-            itemBuilder: (context) => ["Day", "Week"]
-                .map((e) => PopupMenuItem<String>(
-                      value: e,
-                      child: CustomText(text: e),
-                    ))
-                .toList()),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   tooltip: "Change view",
+      //   shape: const CircleBorder(),
+      //   backgroundColor: HexColor.fromHex(
+      //       ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
+      //   onPressed: () {},
+      //   child: PopupMenuButton<String>(
+      //       tooltip: "Change view",
+      //       icon: const Icon(Icons.calendar_view_day, color: Colors.white),
+      //       onSelected: viewOptionSelected,
+      //       itemBuilder: (context) => ["Day", "Week"]
+      //           .map((e) => PopupMenuItem<String>(
+      //                 value: e,
+      //                 child: CustomText(text: e),
+      //               ))
+      //           .toList()),
+      // ),
     );
   }
 
@@ -133,9 +137,9 @@ class _AIPlansState extends State<AIPlans> {
     if (option == "Day") {
       _calendarController.view = CalendarView.day;
     }
-    if (option == "Week") {
-      _calendarController.view = CalendarView.week;
-    }
+    // if (option == "Week") {
+    //   _calendarController.view = CalendarView.week;
+    // }
     setState(() {});
   }
 
@@ -183,41 +187,6 @@ class _AIPlansState extends State<AIPlans> {
                         ),
                       ),
                     ),
-              // appointment.endTime.getMillisecondsSinceEpoch() -
-              //             appointment.startTime.getMillisecondsSinceEpoch() >=
-              //         40 * 60 * 1000
-              //     ? PopupMenuButton<String>(
-              //         icon: Icon(Icons.adaptive.more, color: Colors.white),
-              //         onSelected: (val) => optionSelected(val, appointment),
-              //         itemBuilder: (context) =>
-              //             ((TmiDateTime.now().getMillisecondsSinceEpoch() -
-              //                             appointment.startTime
-              //                                 .getMillisecondsSinceEpoch()) >=
-              //                         0
-              //                     ? ["Clone"]
-              //                     : ["Clone", "Reai", "Remove"])
-              //                 .map((e) => PopupMenuItem<String>(
-              //                       value: e,
-              //                       child: CustomText(text: e),
-              //                     ))
-              //                 .toList())
-              //     : FittedBox(
-              //         child: PopupMenuButton<String>(
-              //             icon: Icon(Icons.adaptive.more, color: Colors.white),
-              //             onSelected: (val) => optionSelected(val, appointment),
-              //             itemBuilder: (context) => ((TmiDateTime.now()
-              //                                 .getMillisecondsSinceEpoch() -
-              //                             appointment.startTime
-              //                                 .getMillisecondsSinceEpoch()) >=
-              //                         0
-              //                     ? ["Clone"]
-              //                     : ["Clone", "Reai", "Remove"])
-              //                 .map((e) => PopupMenuItem<String>(
-              //                       value: e,
-              //                       child: CustomText(text: e),
-              //                     ))
-              //                 .toList()),
-              //       )
             ],
           ),
         ),
@@ -226,11 +195,13 @@ class _AIPlansState extends State<AIPlans> {
   }
 
   void fetchPlans() async {
-    _plans = await Plan.getAllPlans(null, context);
+    _plans = await Plan.getPredictedPlans(
+        TmiDateTime(_dateNotifier.value.millisecondsSinceEpoch), context);
     setState(() {});
   }
 
   void planDoubleTapped(Plan plan) async {
+    plan.planId = "8";
     AddOrUpdatePlanRoute.push(context, plan, (p0) {
       if (Navigator.canPop(context)) Navigator.pop(context);
       fetchPlans();
