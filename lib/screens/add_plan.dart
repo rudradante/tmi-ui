@@ -178,7 +178,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                                 ? () {}
                                 : chooseStartTimeTapped,
                             text:
-                                "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
+                                "${plan.startTime.getTimeAsString()}\n${plan.startTime.getDateAsString()}",
                             color: widget.notEditable
                                 ? Colors.grey
                                 : HexColor.fromHex(
@@ -200,7 +200,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                                 ? () {}
                                 : chooseEndTimeTapped,
                             text:
-                                "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
+                                "${plan.endTime.getTimeAsString()}\n${plan.endTime.getDateAsString()}",
                             color: widget.notEditable
                                 ? Colors.grey
                                 : HexColor.fromHex(
@@ -304,15 +304,16 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   Future chooseStartTimeTapped() async {
-    var result = await chooseDateAndTime(context, fieldLableText: "Start Time");
+    var result = await chooseDateAndTime(context,
+        fieldLableText: "Start Time", firstDateTime: TmiDateTime(0));
     if (result == null) return;
     plan.startTime = result;
     plan.breaks.removeWhere((element) =>
         element.startTime.getMillisecondsSinceEpoch() <=
         plan.startTime.getMillisecondsSinceEpoch());
     setState(() {});
-    showStartEndTimeValidationIfApplicable();
-    showBreakTimingValidationWithRespectToPlanIfApplicable();
+    //showStartEndTimeValidationIfApplicable();
+    //showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
   String? showStartEndTimeValidationIfApplicable() {
@@ -346,7 +347,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   Future chooseEndTimeTapped() async {
     var result = await chooseDateAndTime(context,
         fieldLableText: "End Time",
-        firstDateTime: plan.startTime,
+        firstDateTime: TmiDateTime(0), //plan.startTime,
         initialDateTime: plan.startTime);
 
     if (result == null) return;
@@ -365,12 +366,12 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     //   return;
     // }
 
-    String? validationError = showStartEndTimeValidationIfApplicable() ??
-        showBreakTimingValidationWithRespectToPlanIfApplicable();
-    if (validationError != null) {
-      await showMessageDialog("Invalid time", validationError, context);
-      return;
-    }
+    // String? validationError = showStartEndTimeValidationIfApplicable() ??
+    //     showBreakTimingValidationWithRespectToPlanIfApplicable();
+    // if (validationError != null) {
+    //   await showMessageDialog("Invalid time", validationError, context);
+    //   return;
+    // }
     var requestPlan = plan;
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();

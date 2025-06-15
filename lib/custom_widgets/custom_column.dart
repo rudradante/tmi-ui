@@ -14,7 +14,7 @@ class CustomColumn extends StatelessWidget {
       this.crossAxisAlignment = CrossAxisAlignment.center,
       this.mainAxisSize = MainAxisSize.max,
       this.children = const <Widget>[],
-      this.showEmptyImage = true})
+      this.showEmptyImage = false})
       : super(key: key);
 
   @override
@@ -25,7 +25,11 @@ class CustomColumn extends StatelessWidget {
       crossAxisAlignment: crossAxisAlignment,
       mainAxisSize: mainAxisSize,
       children: children.isEmpty
-          ? [showEmptyImage ? const EmptyImageWidget() : const SizedBox()]
+          ? [
+              showEmptyImage
+                  ? const EmptyImageWidget()
+                  : const SizedBox(height: 128, width: 128)
+            ]
           : children,
     );
   }

@@ -11,11 +11,12 @@ class CustomListView extends StatelessWidget {
       this.scrollDirection = Axis.vertical,
       this.shrinkWrap = true,
       this.reverse = false,
+      this.showEmptyIcon = false,
       this.controller})
       : super(key: key);
   final Widget Function(BuildContext, int) itemBuilder;
   final int itemCount;
-  final bool shrinkWrap, reverse;
+  final bool shrinkWrap, reverse, showEmptyIcon;
   final Axis scrollDirection;
   final ScrollController? controller;
   @override
@@ -26,7 +27,9 @@ class CustomListView extends StatelessWidget {
       constraints:
           BoxConstraints(maxWidth: sf.size.width, maxHeight: sf.size.height),
       child: itemCount == 0
-          ? const Center(child: EmptyImageWidget())
+          ? showEmptyIcon
+              ? const Center(child: EmptyImageWidget())
+              : SizedBox(height: 128, width: 128)
           : ListView.builder(
               reverse: reverse,
               controller: controller,

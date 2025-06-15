@@ -23,6 +23,7 @@ class _MyPlansState extends State<MyPlans> {
   @override
   Widget build(BuildContext context) {
     return CustomListView(
+        showEmptyIcon: true,
         itemBuilder: (context, i) {
           return MyPlanCard(
               widget._plans[i],

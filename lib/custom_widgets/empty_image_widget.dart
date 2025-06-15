@@ -10,10 +10,14 @@ class EmptyImageWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     ScreenFactors sf = calculateScreenFactors(context);
     return center
-        ? Center(
+        ? ClipRRect(
+            borderRadius: BorderRadius.circular(64),
+            child: Center(
+                child: Image.asset("assets/icons/empty.png",
+                    width: 128 * sf.cf, height: 128 * sf.cf)))
+        : ClipRRect(
+            borderRadius: BorderRadius.circular(64),
             child: Image.asset("assets/icons/empty.png",
-                width: 128 * sf.cf, height: 128 * sf.cf))
-        : Image.asset("assets/icons/empty.png",
-            width: 128 * sf.cf, height: 128 * sf.cf);
+                width: 128 * sf.cf, height: 128 * sf.cf));
   }
 }

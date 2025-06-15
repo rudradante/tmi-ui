@@ -62,6 +62,11 @@ class _PlanDashboardState extends State<PlanDashboard> {
     var sf = calculateScreenFactors(context);
     return CustomScaffold(
         showBackButton: false,
+        leadingAppbarWidget: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset("assets/icons/empty.png",
+              width: 16 * sf.cf, height: 16 * sf.cf),
+        ),
         title: sf.maxComponents <= 2
             ? widget.editPlanSectionTitle
             : widget.editPlanSectionTitle,
@@ -177,6 +182,15 @@ class _PlanDashboardState extends State<PlanDashboard> {
     }
     if (widget.isCloneView) {
       _plans.add(plan);
+      widget.selectedPlan!.planId =
+          TmiDateTime.now().getMillisecondsSinceEpoch().toString();
+      widget.selectedPlan!.startTime = plan.startTime = TmiDateTime(
+          TmiDateTime.now()
+              .toDateTime()
+              .add(Duration(days: 1))
+              .millisecondsSinceEpoch);
+      widget.selectedPlan!.endTime =
+          plan.startTime.add(const Duration(hours: 1));
       setState(() {});
     } else {
       refreshPlans();
