@@ -51,6 +51,12 @@ class Reminder {
     var reminders = plans.map((e) => Reminder.fromPlan(e)).toList();
     Reminder.saveReminders(reminders);
     NotificationService.init();
+    var rem = Reminder(
+        title: "Test",
+        description: "S",
+        remindAt: TmiDateTime.now().add(Duration(seconds: 30)));
+    print("Remindr at : " + rem.remindAt.toDateTime().toString());
+    NotificationService.scheduleReminder(rem);
     for (var reminder in reminders.where((element) =>
         element.remindAt.getMillisecondsSinceEpoch() >
         TmiDateTime.now().getMillisecondsSinceEpoch())) {

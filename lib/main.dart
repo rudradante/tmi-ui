@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tmiui/config/config_provider.dart';
@@ -96,7 +97,7 @@ void main() async {
 }
 
 Future<void> requestAndroidNotificationPermission() async {
-  if (Platform.isAndroid) {
+  if (!kIsWeb && Platform.isAndroid) {
     var status = await Permission.notification.status;
     if (!status.isGranted) {
       await Permission.notification.request();

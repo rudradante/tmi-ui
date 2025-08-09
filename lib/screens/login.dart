@@ -35,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => isLoading = false);
 
-    if (loginUser == null) return;
+    //if (loginUser == null) return;
     // Navigate on successful login (dummy logic)
     PlanDashboardRoute.push(context);
   }
