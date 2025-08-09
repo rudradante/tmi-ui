@@ -13,7 +13,6 @@ import 'package:tmiui/screens/screen_types.dart';
 import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_row.dart';
 import '../custom_widgets/custom_scaffold.dart';
-import '../custom_widgets/should_proceed_dialog.dart';
 import '../models.dart/tmi_datetime.dart';
 
 class AIPlans extends StatefulWidget {
@@ -46,13 +45,12 @@ class _AIPlansState extends State<AIPlans> {
     _dateNotifier.value = _calendarController.displayDate!;
     _calendarController.view = CalendarView.day;
     _calendarController.addPropertyChangedListener((p0) {
-      // if (p0 == "displayDate") {
-      //   _dateNotifier.value = _calendarController.displayDate!;
-      //   //
-      //   // Timer(const Duration(milliseconds: 300),
-      //   //     () => _dateNotifier.notifyListeners());
-      //   fetchPlans();
-      // }
+      if (p0 == "displayDate") {
+        _dateNotifier.value = _calendarController.displayDate!;
+        //
+        Timer(const Duration(milliseconds: 300),
+            () => _dateNotifier.notifyListeners());
+      }
     });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       fetchPlans();
@@ -62,7 +60,7 @@ class _AIPlansState extends State<AIPlans> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold(
-      title: "TiMa AI",
+      title: "TiMA Pro",
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(
           ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
@@ -105,7 +103,7 @@ class _AIPlansState extends State<AIPlans> {
                           isUtc: false);
                   _dateNotifier.value = _calendarController.displayDate!;
 
-                  fetchPlans();
+                  //fetchPlans();
                 },
                 TmiDateTime(_dateNotifier.value.millisecondsSinceEpoch),
                 weekView: _calendarController.view! == CalendarView.week,

@@ -27,7 +27,9 @@ final List<Color> _cardColors = [
 final Map<String, Color> _planColors = {};
 
 class ReviewPlans extends StatefulWidget {
-  const ReviewPlans({Key? key}) : super(key: key);
+  final TmiDateTime initialDateTime;
+  const ReviewPlans({Key? key, required this.initialDateTime})
+      : super(key: key);
 
   @override
   State<ReviewPlans> createState() => _ReviewPlansState();
@@ -45,7 +47,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
     _reviewing.clear();
     _planColors.clear();
     _calendarController = CalendarController();
-    _calendarController.displayDate = TmiDateTime.nowWithMinDate().toDateTime();
+    _calendarController.displayDate = widget.initialDateTime.toDateTime();
     _dateNotifier.value = _calendarController.displayDate!;
     _calendarController.view = CalendarView.day;
     _calendarController.addPropertyChangedListener((p0) {
@@ -113,7 +115,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
             })
       ],
       floatingActionButton: FloatingActionButton(
-        tooltip: "TIMA AI",
+        tooltip: "TIMA Pro",
         shape: const CircleBorder(),
         backgroundColor: HexColor.fromHex(
             ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
@@ -623,9 +625,15 @@ class MeetingDataSource extends CalendarDataSource {
 }
 
 class ReviewPlansRoute {
-  static Future push(BuildContext context, List<Plan> plans) async {
+  static Future push(BuildContext context, List<Plan> plans,
+      {TmiDateTime? initialDateTime}) async {
     await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const ReviewPlans()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => ReviewPlans(
+                  initialDateTime:
+                      initialDateTime ?? TmiDateTime.nowWithMinDate(),
+                )));
   }
 }
 

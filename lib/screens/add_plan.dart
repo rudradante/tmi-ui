@@ -615,7 +615,7 @@ class AddOrUpdatePlanRoute {
           AddOrUpdatePlan(
             plan,
             onNewPlanAdded,
-            fullyEditable: fullyEditable,
+            fullyEditable: true, //Temp
             notEditable: notEditable,
             onlyTimeEditable: onlyTimeEditable,
             elevatedContainer: false,
@@ -639,7 +639,7 @@ class AddOrUpdatePlanRoute {
                     centerWidget: AddOrUpdatePlan(
                       plan,
                       onNewPlanAdded,
-                      fullyEditable: fullyEditable,
+                      fullyEditable: true, //Temp
                       notEditable: notEditable,
                       onlyTimeEditable: onlyTimeEditable,
                     ),

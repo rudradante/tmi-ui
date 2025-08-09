@@ -12,6 +12,7 @@ import 'package:tmiui/screens/screen_types.dart';
 import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_text.dart';
 import '../models.dart/plan.dart';
+import '../models.dart/reminder.dart';
 import '../models.dart/tmi_datetime.dart';
 import 'my_plans.dart';
 
@@ -43,6 +44,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
     }
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Reminder.syncReminders(context);
       if (!widget.isCloneView) {
         refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
       } else {

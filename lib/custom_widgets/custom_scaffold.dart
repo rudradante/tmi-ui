@@ -34,7 +34,7 @@ class CustomScaffold extends StatefulWidget {
   final Color scaffoldBackgroundColor;
   final Color? appBarBackgroundColor;
   final bool showBackButton;
-  final BottomAppBar? bottomAppBar;
+  final Widget? bottomAppBar;
 
   const CustomScaffold(
       {Key? key,

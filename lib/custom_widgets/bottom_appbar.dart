@@ -7,6 +7,7 @@ import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/review.dart';
 import 'package:tmiui/screens/schedule.dart';
 import 'package:tmiui/screens/screen_types.dart';
+import 'package:tmiui/screens/my_account.dart';
 
 import '../extensions/color.dart';
 import 'custom_column.dart';
@@ -82,6 +83,9 @@ void screenTapped(
 
     case ScreenType.AI:
       AIPlansRoute.push(context, [], (p0) {});
+
+    case ScreenType.MyAccount:
+      MyAccountRoute.push(context, false);
     default:
       return;
   }
