@@ -8,6 +8,7 @@ import 'package:tmiui/models.dart/plan_break.dart';
 import 'package:tmiui/models.dart/plan_note.dart';
 import 'package:tmiui/models.dart/plan_references.dart';
 import 'package:tmiui/models.dart/plan_review.dart';
+import 'package:tmiui/models.dart/reminder.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
 import '../server/request.dart';
@@ -116,6 +117,7 @@ class Plan extends BaseTable {
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
+      await Reminder.syncReminders(context);
       return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
     }
     return null;
@@ -124,13 +126,8 @@ class Plan extends BaseTable {
   static Future<Plan?> updatePlan(Plan plan, BuildContext context) async {
     var response = await Server.update('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      try {
-        return plan;
-      } catch (err) {
-        if (kDebugMode) {
-          print(err);
-        }
-      }
+      await Reminder.syncReminders(context);
+      return plan;
     }
     return null;
   }
@@ -175,7 +172,11 @@ class Plan extends BaseTable {
 
   static Future<bool> deletePlan(String planId, BuildContext context) async {
     var response = await Server.delete('/plan/$planId', {}, context);
-    return Server.isSuccessHttpCode(response.statusCode);
+    var deleted = Server.isSuccessHttpCode(response.statusCode);
+    if (deleted) {
+      await Reminder.syncReminders(context);
+    }
+    return deleted;
   }
 
   bool isNewPlan() => int.tryParse(planId) != null;

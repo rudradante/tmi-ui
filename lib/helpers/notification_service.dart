@@ -18,6 +18,8 @@ class NotificationService {
 
   /// Initialize for all platforms
   static Future<void> init() async {
+    await _localPlugin.cancelAll(); // Clear any existing notifications
+    if (initialized) return;
     await _initLocalNotifications();
     initialized = true;
   }
@@ -25,13 +27,24 @@ class NotificationService {
   /// Initialize for Android / Windows
   static Future<void> _initLocalNotifications() async {
     tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
+
+    await _localPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+
+    _localPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
 
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const WindowsInitializationSettings windowsSettings =
         WindowsInitializationSettings(
-      appName: 'TMI UI',
+      appName: 'TiMA',
       appUserModelId: 'com.example.tmiui',
       guid: '12345678-1234-1234-1234-123456789abc', // Replace with your GUID
     );
@@ -52,24 +65,22 @@ class NotificationService {
       _pendingReminders.add(reminder);
       _startBgTimer();
     } else {
-      // Android & others: scheduled notification
+      var tzDateTime = tz.TZDateTime.fromMillisecondsSinceEpoch(
+          tz.UTC, reminder.remindAt.getMillisecondsSinceEpoch());
       await _localPlugin.zonedSchedule(
-        reminder.remindAt.hashCode,
-        reminder.title,
-        reminder.description,
-        tz.TZDateTime.fromMillisecondsSinceEpoch(
-            tz.UTC, reminder.remindAt.getMillisecondsSinceEpoch()),
-        const NotificationDetails(
-          android: AndroidNotificationDetails(
-            'reminder_channel',
-            'Reminders',
-            importance: Importance.max,
-            priority: Priority.high,
+          reminder.remindAt.hashCode,
+          reminder.title,
+          reminder.description,
+          tzDateTime,
+          const NotificationDetails(
+            android: AndroidNotificationDetails(
+              'reminder_channel',
+              'Reminders',
+              importance: Importance.max,
+              priority: Priority.high,
+            ),
           ),
-        ),
-        matchDateTimeComponents: DateTimeComponents.dateAndTime,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      );
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
     }
   }
 

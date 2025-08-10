@@ -46,26 +46,19 @@ class Reminder {
     AppFile.writeAsString(filename, jsonEncode(reminders));
   }
 
-  static void syncReminders(BuildContext context) async {
+  static Future<void> syncReminders(BuildContext context) async {
     var plans = await Plan.getAllPlans(null, context);
     var reminders = plans.map((e) => Reminder.fromPlan(e)).toList();
     Reminder.saveReminders(reminders);
-    NotificationService.init();
-    var rem = Reminder(
-        title: "Test",
-        description: "S",
-        remindAt: TmiDateTime.now().add(Duration(seconds: 30)));
-    print("Remindr at : " + rem.remindAt.toDateTime().toString());
-    NotificationService.scheduleReminder(rem);
+    await NotificationService.init();
     for (var reminder in reminders.where((element) =>
         element.remindAt.getMillisecondsSinceEpoch() >
         TmiDateTime.now().getMillisecondsSinceEpoch())) {
       var rem = Reminder(
-          title: "Test",
-          description: "S",
-          remindAt: TmiDateTime.now().add(Duration(seconds: 30)));
-      print("Remindr at : " + rem.remindAt.toDateTime().toString());
-      NotificationService.scheduleReminder(rem);
+          title: "Upcoming Plan",
+          description: reminder.title,
+          remindAt: reminder.remindAt);
+      await NotificationService.scheduleReminder(rem);
     }
   }
 }

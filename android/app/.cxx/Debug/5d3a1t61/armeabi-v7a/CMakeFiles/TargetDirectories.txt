@@ -1,0 +1,2 @@
+C:/Users/abhishek/Desktop/tima/android/app/.cxx/Debug/5d3a1t61/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/abhishek/Desktop/tima/android/app/.cxx/Debug/5d3a1t61/armeabi-v7a/CMakeFiles/rebuild_cache.dir
