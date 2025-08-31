@@ -92,14 +92,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AppFile.initialize();
   await ConfigProvider.initialize();
-  print("TMI UI initialized");
   await requestAndroidNotificationPermission();
   runApp(const TmiApp());
 }
 
 Future<void> requestAndroidNotificationPermission() async {
-  print("Requesting Android notification permission" +
-      Platform.isAndroid.toString());
   if (!kIsWeb && Platform.isAndroid) {
     var status = await Permission.notification.status;
     print("Notification permission status: $status");

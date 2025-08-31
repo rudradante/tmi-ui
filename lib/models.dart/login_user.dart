@@ -47,4 +47,26 @@ class LoginUser {
     }
     return null;
   }
+
+  static Future<bool> forgotPassword(String email, BuildContext context) async {
+    var request = {"email": email};
+    var response = await Server.post(
+        '/auth/forgot-password', {}, jsonEncode(request), context);
+    if (Server.isSuccessHttpCode(response.statusCode)) {
+      return true;
+    }
+    return false;
+  }
+
+  static Future<bool> resetPassword(String email, String otp,
+      String newPassword, BuildContext context) async {
+    var request = {"email": email, "otp": otp, "password": newPassword};
+    var response = await Server.post(
+        '/auth/reset-password', {}, jsonEncode(request), context);
+    if (Server.isSuccessHttpCode(response.statusCode)) {
+      AppFile.delete("refresh_token");
+      return true;
+    }
+    return false;
+  }
 }

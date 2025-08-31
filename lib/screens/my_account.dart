@@ -372,7 +372,7 @@ class PlanCard extends StatelessWidget {
     final bool isUpcomingPlan = plan.startTime.getMillisecondsSinceEpoch() >
         TmiDateTime.now().getMillisecondsSinceEpoch();
     return InkWell(
-      onDoubleTap: () async {
+      onTap: () async {
         if (isUpcomingPlan) {
           await PlanDashboardRoute.push(context, selectedPlan: plan);
         } else {
