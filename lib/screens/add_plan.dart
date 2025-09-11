@@ -276,7 +276,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     if (kIsWeb) {
       var proceed = await showShouldProceedDialog(
           "Local reference",
-          "Adding local reference is only supported in desktop/mobile version. You will have to add the file location manually in web version. Do you want to continue?",
+          "Adding local reference is only supported in desktop/mobile version. Do you want to continue?",
           context);
       if (!proceed) return;
       await addWebLink(locationHintText: "File location");
@@ -305,15 +305,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
 
   Future chooseStartTimeTapped() async {
     var result = await chooseDateAndTime(context,
-        fieldLableText: "Start Time", firstDateTime: TmiDateTime(0));
+        fieldLableText: "Start Time", firstDateTime: TmiDateTime.now());
     if (result == null) return;
     plan.startTime = result;
     plan.breaks.removeWhere((element) =>
         element.startTime.getMillisecondsSinceEpoch() <=
         plan.startTime.getMillisecondsSinceEpoch());
     setState(() {});
-    //showStartEndTimeValidationIfApplicable();
-    //showBreakTimingValidationWithRespectToPlanIfApplicable();
+    showStartEndTimeValidationIfApplicable();
+    showBreakTimingValidationWithRespectToPlanIfApplicable();
   }
 
   String? showStartEndTimeValidationIfApplicable() {
@@ -347,7 +347,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   Future chooseEndTimeTapped() async {
     var result = await chooseDateAndTime(context,
         fieldLableText: "End Time",
-        firstDateTime: TmiDateTime(0), //plan.startTime,
+        firstDateTime: plan.startTime,
         initialDateTime: plan.startTime);
 
     if (result == null) return;
@@ -356,22 +356,22 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   saveButtonTapped() async {
-    // if (plan.endTime
-    //         .toDateTime()
-    //         .millisecondsSinceEpoch
-    //         .compareTo(plan.startTime.toDateTime().millisecondsSinceEpoch) <=
-    //     0) {
-    //   await showMessageDialog("Invalid time",
-    //       "Start time of the plan cannot be ahead of end time", context);
-    //   return;
-    // }
+    if (plan.endTime
+            .toDateTime()
+            .millisecondsSinceEpoch
+            .compareTo(plan.startTime.toDateTime().millisecondsSinceEpoch) <=
+        0) {
+      await showMessageDialog("Invalid time",
+          "Start time of the plan cannot be ahead of end time", context);
+      return;
+    }
 
-    // String? validationError = showStartEndTimeValidationIfApplicable() ??
-    //     showBreakTimingValidationWithRespectToPlanIfApplicable();
-    // if (validationError != null) {
-    //   await showMessageDialog("Invalid time", validationError, context);
-    //   return;
-    // }
+    String? validationError = showStartEndTimeValidationIfApplicable() ??
+        showBreakTimingValidationWithRespectToPlanIfApplicable();
+    if (validationError != null) {
+      await showMessageDialog("Invalid time", validationError, context);
+      return;
+    }
     var requestPlan = plan;
     requestPlan.title = _titleController.text.trim();
     requestPlan.description = _descriptionController.text.trim();
@@ -615,7 +615,7 @@ class AddOrUpdatePlanRoute {
           AddOrUpdatePlan(
             plan,
             onNewPlanAdded,
-            fullyEditable: true, //Temp
+            fullyEditable: fullyEditable,
             notEditable: notEditable,
             onlyTimeEditable: onlyTimeEditable,
             elevatedContainer: false,
@@ -639,7 +639,7 @@ class AddOrUpdatePlanRoute {
                     centerWidget: AddOrUpdatePlan(
                       plan,
                       onNewPlanAdded,
-                      fullyEditable: true, //Temp
+                      fullyEditable: fullyEditable,
                       notEditable: notEditable,
                       onlyTimeEditable: onlyTimeEditable,
                     ),

@@ -3,12 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/custom_widgets/custom_scaffold.dart';
+import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/custom_widgets/message_dialog.dart';
 import 'package:tmiui/custom_widgets/text_field.dart';
 import 'package:tmiui/helpers/file_system.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/review.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../custom_widgets/custom_flat_button.dart';
 import '../extensions/color.dart';
@@ -32,6 +34,7 @@ class MyAccountScreen extends StatefulWidget {
 
 class _MyAccountScreenState extends State<MyAccountScreen> {
   int _selectedIndex = 0;
+  bool _isTermsAccepted = false;
 
   // Common Controllers for both flows
   final _formKey = GlobalKey<FormState>();
@@ -145,7 +148,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
               const SizedBox(height: 10),
               CustomTextField(
                 controller: _lastName,
-                label: 'Last Name',
+                label: 'Last Name ',
               ),
               const SizedBox(height: 10),
               widget.isSignUpFlow
@@ -172,7 +175,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                     child: CustomTextField(
                       controller: _email,
                       readOnly: isEmailVerified,
-                      label: 'abc@xyz.com',
+                      label: 'Email',
                       suffixIcon: isEmailVerified
                           ? const Icon(Icons.verified, color: Colors.green)
                           : null,
@@ -208,12 +211,61 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                 ),
               ],
               const SizedBox(height: 30),
+              if (widget.isSignUpFlow) ...[
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Checkbox(
+                      value: _isTermsAccepted,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          _isTermsAccepted = value ?? false;
+                        });
+                      },
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          // You can navigate to a Terms & Conditions screen here if needed
+                          launchUrlString("https://www.google.com");
+                        },
+                        child: const Text.rich(
+                          TextSpan(
+                            text: 'I agree to the ',
+                            style:
+                                TextStyle(fontSize: 14, color: Colors.black87),
+                            children: [
+                              TextSpan(
+                                text: 'Terms & Conditions',
+                                style: TextStyle(
+                                  color: Colors.blue,
+                                  decoration: TextDecoration.underline,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               CustomFlatButton(
                   isOutlined: false,
                   text: 'Save & Continue',
                   color: HexColor.fromHex(
                       ConfigProvider.getThemeConfig().primaryButtonColor),
                   onTap: () {
+                    if (!_isTermsAccepted && widget.isSignUpFlow) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                            content: Text(
+                                'Please accept Terms & Conditions first.')),
+                      );
+                      return 1;
+                    }
                     if (_formKey.currentState!.validate()) {
                       if (widget.isSignUpFlow && !isEmailVerified) {
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -223,6 +275,14 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                       } else if (widget.isSignUpFlow) {
                         PlanDashboardRoute.push(context);
                       } else {
+                        if (_firstName.text.trim().isEmpty) {
+                          return showMessageDialog("Invalid details",
+                              "First name cannot be empty", context);
+                        }
+                        if (_lastName.text.trim().isEmpty) {
+                          return showMessageDialog("Invalid details",
+                              "Last name cannot be empty", context);
+                        }
                         Account.updateAccount(
                             _firstName.text, _lastName.text, context);
                       }
@@ -311,9 +371,21 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       scaffoldBackgroundColor: Colors.white,
       actions: [
         !widget.isSignUpFlow
-            ? IconButton(
-                onPressed: onPressed,
-                icon: Icon(Icons.logout, color: Colors.white))
+            ? InkWell(
+                onTap: onPressed,
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  CustomText(
+                      text: "Logout",
+                      size: 12,
+                      color: HexColor.fromHex(ConfigProvider.getThemeConfig()
+                          .appBarForegroundColor)),
+                  SizedBox(width: 4),
+                  Icon(Icons.logout,
+                      color: HexColor.fromHex(ConfigProvider.getThemeConfig()
+                          .appBarForegroundColor)),
+                  SizedBox(width: 4)
+                ]),
+              )
             : SizedBox()
       ],
       centerWidget: SizedBox(

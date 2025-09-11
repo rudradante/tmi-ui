@@ -47,6 +47,18 @@ class _LoginScreenState extends State<LoginScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) => checkLoggedIn());
   }
 
+  StateSetter? _fpSetModalState;
+  bool _fpSheetOpen = false;
+
+  void _safeSheetSetState(VoidCallback fn) {
+    // Prefer updating the sheet subtree if it's open; otherwise fall back to parent
+    if (_fpSheetOpen && _fpSetModalState != null) {
+      _fpSetModalState!(fn);
+    } else if (mounted) {
+      setState(fn);
+    }
+  }
+
   @override
   void dispose() {
     usernameController.dispose();
@@ -101,7 +113,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void _openForgotPasswordSheet() {
     _resetForgotSheetState();
     _fpEmail.text = usernameController.text.trim(); // prefill if available
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -112,111 +123,116 @@ class _LoginScreenState extends State<LoginScreen> {
       builder: (ctx) {
         final theme = ConfigProvider.getThemeConfig();
         final primary = HexColor.fromHex(theme.primaryButtonColor);
+        return StatefulBuilder(builder: (ctx, setModalState) {
+          _fpSetModalState = setModalState;
+          _fpSheetOpen = true;
 
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 16,
-            right: 16,
-            top: 16,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-          ),
-          child: Form(
-            key: _fpFormKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 6),
-                Container(
-                  width: 50,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.black26,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text('Reset Password',
-                    style:
-                        TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 12),
-
-                // Email (always shown)
-                CustomTextField(
-                    controller: _fpEmail, label: 'Registered email'),
-                const SizedBox(height: 10),
-
-                // Phase 1: Send OTP
-                if (!_fpOtpPhase) ...[
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomFlatButton(
-                          isOutlined: false,
-                          text: _fpSendingOtp
-                              ? 'Sending...'
-                              : (_fpCanResend
-                                  ? 'Send OTP'
-                                  : 'Resend in ${_fpResendSeconds}s'),
-                          color: primary,
-                          onTap: (!_fpCanResend || _fpSendingOtp)
-                              ? null
-                              : _sendOtp,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'We will email a One-Time Password to this address.',
-                    style: TextStyle(fontSize: 12, color: Colors.black87),
-                  ),
-                ],
-
-                // Phase 2: Enter OTP + New Password (same request on submit)
-                if (_fpOtpPhase) ...[
-                  CustomTextField(
-                      controller: _fpOtp, label: '6-digit OTP', maxLength: 6),
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    controller: _fpNewPass,
-                    label: 'New Password',
-                    hiddenText: true,
-                  ),
-                  const SizedBox(height: 10),
-                  CustomTextField(
-                    controller: _fpConfirmPass,
-                    label: 'Confirm New Password',
-                    hiddenText: true,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: CustomFlatButton(
-                          isOutlined: false,
-                          text:
-                              _fpResetting ? 'Resetting...' : 'Reset Password',
-                          color: primary,
-                          onTap: _fpResetting ? null : _resetPasswordWithOtp,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _fpCanResend ? _resendOtp : null,
-                      child: Text(_fpCanResend
-                          ? 'Resend OTP'
-                          : 'Resend in ${_fpResendSeconds}s'),
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 16,
+              right: 16,
+              top: 16,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+            ),
+            child: Form(
+              key: _fpFormKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 6),
+                  Container(
+                    width: 50,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  const Text('Reset Password',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 12),
+
+                  // Email (always shown)
+                  CustomTextField(
+                      controller: _fpEmail, label: 'Registered email'),
+                  const SizedBox(height: 10),
+
+                  // Phase 1: Send OTP
+                  if (!_fpOtpPhase) ...[
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomFlatButton(
+                            isOutlined: false,
+                            text: _fpSendingOtp
+                                ? 'Sending...'
+                                : (_fpCanResend
+                                    ? 'Send OTP'
+                                    : 'Resend in ${_fpResendSeconds}s'),
+                            color: primary,
+                            onTap: (!_fpCanResend || _fpSendingOtp)
+                                ? null
+                                : _sendOtp,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'We will email a One-Time Password to this address.',
+                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                    ),
+                  ],
+
+                  // Phase 2: Enter OTP + New Password (same request on submit)
+                  if (_fpOtpPhase) ...[
+                    CustomTextField(
+                        controller: _fpOtp, label: '6-digit OTP', maxLength: 6),
+                    const SizedBox(height: 10),
+                    CustomTextField(
+                      controller: _fpNewPass,
+                      label: 'New Password',
+                      hiddenText: true,
+                    ),
+                    const SizedBox(height: 10),
+                    CustomTextField(
+                      controller: _fpConfirmPass,
+                      label: 'Confirm New Password',
+                      hiddenText: true,
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: CustomFlatButton(
+                            isOutlined: false,
+                            text: _fpResetting
+                                ? 'Resetting...'
+                                : 'Reset Password',
+                            color: primary,
+                            onTap: _fpResetting ? null : _resetPasswordWithOtp,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _fpCanResend ? _resendOtp : null,
+                        child: Text(_fpCanResend
+                            ? 'Resend OTP'
+                            : 'Resend in ${_fpResendSeconds}s'),
+                      ),
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        );
+          );
+        });
       },
     ).whenComplete(() => _resetForgotSheetState(keepEmail: true));
   }
@@ -238,66 +254,52 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {});
   }
 
-  Future<void> _sendOtp() async {
-    setState(() => _fpSendingOtp = true);
-
-    // BACKEND: send OTP to email (no password in this email)
-    final ok = await LoginUser.forgotPassword(_fpEmail.text.trim(), context);
-
-    setState(() => _fpSendingOtp = false);
-    if (!ok) return;
-
-    // Switch to OTP + New Password phase
-    setState(() {
-      _fpOtpPhase = true;
-      _fpCanResend = false;
-      _fpResendSeconds = 45;
-    });
-
-    ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('OTP sent to ${_fpEmail.text.trim()}')));
-
-    _startResendCountdown();
-  }
-
   void _startResendCountdown() {
     _fpTimer?.cancel();
     _fpTimer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_fpResendSeconds <= 1) {
         t.cancel();
-        if (mounted) {
-          setState(() {
-            _fpCanResend = true;
-            _fpResendSeconds = 45;
-          });
-        }
+        _safeSheetSetState(() {
+          _fpCanResend = true;
+          _fpResendSeconds = 45;
+        });
       } else {
-        if (mounted) {
-          setState(() => _fpResendSeconds--);
-        }
+        _safeSheetSetState(() => _fpResendSeconds--);
       }
     });
   }
 
-  Future<void> _resendOtp() async {
-    if (_fpSendingOtp) return;
-    setState(() => _fpSendingOtp = true);
-
+  Future<void> _sendOtp() async {
+    _safeSheetSetState(() => _fpSendingOtp = true);
     final ok = await LoginUser.forgotPassword(_fpEmail.text.trim(), context);
-
-    setState(() => _fpSendingOtp = false);
-
+    _safeSheetSetState(() => _fpSendingOtp = false);
     if (!ok) return;
 
-    setState(() {
+    _safeSheetSetState(() {
+      _fpOtpPhase = true;
       _fpCanResend = false;
       _fpResendSeconds = 45;
     });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('OTP sent to ${_fpEmail.text.trim()}')),
+    );
+    _startResendCountdown();
+  }
 
+  Future<void> _resendOtp() async {
+    if (_fpSendingOtp || !_fpCanResend) return;
+    _safeSheetSetState(() => _fpSendingOtp = true);
+    final ok = await LoginUser.forgotPassword(_fpEmail.text.trim(), context);
+    _safeSheetSetState(() => _fpSendingOtp = false);
+    if (!ok) return;
+
+    _safeSheetSetState(() {
+      _fpCanResend = false;
+      _fpResendSeconds = 45;
+    });
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('OTP re-sent to ${_fpEmail.text.trim()}')),
     );
-
     _startResendCountdown();
   }
 
@@ -358,6 +360,7 @@ class _LoginScreenState extends State<LoginScreen> {
               CustomTextField(controller: usernameController, label: "Email"),
               const SizedBox(height: 8),
               CustomTextField(
+                  toggleView: true,
                   hiddenText: true,
                   controller: passwordController,
                   label: "Password"),

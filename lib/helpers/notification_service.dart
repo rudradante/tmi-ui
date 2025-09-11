@@ -18,9 +18,10 @@ class NotificationService {
 
   /// Initialize for all platforms
   static Future<void> init() async {
-    await _localPlugin.cancelAll(); // Clear any existing notifications
+    if (!kIsWeb)
+      await _localPlugin.cancelAll(); // Clear any existing notifications
     if (initialized) return;
-    await _initLocalNotifications();
+    if (!kIsWeb) await _initLocalNotifications();
     initialized = true;
   }
 
@@ -29,18 +30,19 @@ class NotificationService {
     tz.initializeTimeZones();
     tz.setLocalLocation(tz.getLocation('Asia/Kolkata'));
 
-    await _localPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestNotificationsPermission();
-
-    _localPlugin
-        .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
-        ?.requestExactAlarmsPermission();
-
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
+    if (os.Platform.isAndroid) {
+      await _localPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+
+      _localPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestExactAlarmsPermission();
+    }
 
     const WindowsInitializationSettings windowsSettings =
         WindowsInitializationSettings(

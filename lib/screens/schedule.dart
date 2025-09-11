@@ -78,6 +78,8 @@ class _SchedulePlansState extends State<SchedulePlans> {
             allowDragAndDrop: false,
             //view: selectedView,
             dataSource: MeetingDataSource(_plans),
+            todayHighlightColor: HexColor.fromHex(
+                ConfigProvider.getThemeConfig().primaryScheduleCardColor),
             showCurrentTimeIndicator: true,
             appointmentBuilder: appointmentBuilder,
             timeSlotViewSettings: const TimeSlotViewSettings(

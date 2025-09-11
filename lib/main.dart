@@ -19,7 +19,7 @@ class TmiApp extends StatelessWidget {
         statusBarColor: HexColor.fromHex(themeConfig.appBarBackgroundColor),
         statusBarBrightness: Brightness.light));
     return MaterialApp(
-        title: 'TMI',
+        title: 'TiMA',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             datePickerTheme: DatePickerThemeData(

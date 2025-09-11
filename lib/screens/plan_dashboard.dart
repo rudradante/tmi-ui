@@ -44,8 +44,8 @@ class _PlanDashboardState extends State<PlanDashboard> {
     }
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Reminder.syncReminders(context);
       if (!widget.isCloneView) {
+        Reminder.syncReminders(context);
         refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
       } else {
         ScreenFactors sf = calculateScreenFactors(context);
@@ -63,7 +63,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
     var theme = ConfigProvider.getThemeConfig();
     var sf = calculateScreenFactors(context);
     return CustomScaffold(
-        showBackButton: false,
+        showBackButton: widget.isCloneView,
         leadingAppbarWidget: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Image.asset("assets/icons/empty.png",

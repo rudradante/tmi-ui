@@ -81,6 +81,8 @@ class _ReviewPlansState extends State<ReviewPlans> {
             key: UniqueKey(),
             allowViewNavigation: true,
             allowDragAndDrop: false,
+            todayHighlightColor: HexColor.fromHex(
+                ConfigProvider.getThemeConfig().primaryScheduleCardColor),
             //view: selectedView,
             dataSource: MeetingDataSource(_plans),
             showCurrentTimeIndicator: true,

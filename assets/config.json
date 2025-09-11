@@ -2,13 +2,13 @@
   "environment": "dev",
   "server": {
     "baseUrl": {
-      "dev": "dec26fb439b2.ngrok-free.app"
+      "dev": "ec2-3-110-155-51.ap-south-1.compute.amazonaws.com"
     },
     "port": {
       "dev": "80"
     },
     "protocol": {
-      "dev": "https"
+      "dev": "http"
     }
   },
   "theme": {
