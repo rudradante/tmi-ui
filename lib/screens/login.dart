@@ -192,16 +192,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         controller: _fpOtp, label: '6-digit OTP', maxLength: 6),
                     const SizedBox(height: 10),
                     CustomTextField(
-                      controller: _fpNewPass,
-                      label: 'New Password',
-                      hiddenText: true,
-                    ),
+                        controller: _fpNewPass,
+                        label: 'New Password',
+                        hiddenText: true,
+                        toggleView: true),
                     const SizedBox(height: 10),
                     CustomTextField(
-                      controller: _fpConfirmPass,
-                      label: 'Confirm New Password',
-                      hiddenText: true,
-                    ),
+                        controller: _fpConfirmPass,
+                        label: 'Confirm New Password',
+                        hiddenText: true,
+                        toggleView: true),
                     const SizedBox(height: 12),
                     Row(
                       children: [
