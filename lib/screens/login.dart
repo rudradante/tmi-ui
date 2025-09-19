@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:tmiui/custom_widgets/text_field.dart';
 import 'package:tmiui/helpers/file_system.dart';
@@ -377,12 +379,27 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: goToSignup,
                 child: const Text("Don't have an account? Sign Up"),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               CustomFlatButton(
                   text: 'Forgot Password?',
                   color: primary,
                   isOutlined: true,
-                  onTap: _openForgotPasswordSheet)
+                  onTap: _openForgotPasswordSheet),
+              const SizedBox(height: 20),
+              kIsWeb || Platform.isWindows
+                  ?
+                  // Disclaimer text
+                  Text(
+                      "📱 For the best experience, please install our mobile app "
+                      "to receive reminder notifications even when the app is closed.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.black54,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    )
+                  : SizedBox(),
             ],
           ),
         ),
