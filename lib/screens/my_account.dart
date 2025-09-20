@@ -7,6 +7,7 @@ import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/custom_widgets/message_dialog.dart';
 import 'package:tmiui/custom_widgets/text_field.dart';
 import 'package:tmiui/helpers/file_system.dart';
+import 'package:tmiui/models.dart/login_user.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/review.dart';
@@ -372,7 +373,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
       actions: [
         !widget.isSignUpFlow
             ? InkWell(
-                onTap: onPressed,
+                onTap: () => LoginUser.logout(context),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
                   CustomText(
                       text: "Logout",
@@ -421,14 +422,6 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
             )
           : null,
     );
-  }
-
-  void onPressed() {
-    AppFile.delete("refresh_token");
-    Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-        (route) => false);
   }
 }
 

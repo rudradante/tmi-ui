@@ -58,6 +58,10 @@ class Server {
       response = Response('Cannot connect to server', 500);
       print(e);
     }
+    if (response.statusCode == 401) {
+      await logout(context);
+      return response;
+    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
     // if (response.statusCode == 401) {
@@ -66,6 +70,12 @@ class Server {
     //       MaterialPageRoute(builder: (context) => LoginPage()),
     //       (route) => false);
     return response;
+  }
+
+  static Future<void> logout(BuildContext context) async {
+    await showMessageDialog("Hey There!",
+        "Login session has expired. You need to login again", context);
+    LoginUser.logout(context);
   }
 
   static String parseMessageFromResponse(String body) {
@@ -111,6 +121,10 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
+    if (response.statusCode == 401) {
+      await logout(context);
+      return response;
+    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
     return response;
@@ -149,6 +163,10 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
+    if (response.statusCode == 401) {
+      await logout(context);
+      return response;
+    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
     return response;
@@ -186,6 +204,10 @@ class Server {
       }
       print(e);
       response = Response('Cannot connect to server', 500);
+    }
+    if (response.statusCode == 401) {
+      await logout(context);
+      return response;
     }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
@@ -250,6 +272,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+
       print(e);
       return Response("Something Went Wrong", 500);
     }

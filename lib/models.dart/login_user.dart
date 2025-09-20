@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:tmiui/helpers/file_system.dart';
 
+import '../screens/login.dart';
 import '../server/request.dart';
 
 class LoginUser {
@@ -68,5 +69,13 @@ class LoginUser {
       return true;
     }
     return false;
+  }
+
+  static void logout(BuildContext context) {
+    AppFile.delete("refresh_token");
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false);
   }
 }
