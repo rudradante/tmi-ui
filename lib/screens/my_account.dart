@@ -344,7 +344,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
 
   Widget _buildPlanList(bool upcoming) {
     final now = TmiDateTime.now().getMillisecondsSinceEpoch();
-    final filteredPlans = widget.plans.where((plan) {
+    var filteredPlans = widget.plans.where((plan) {
       final titleMatch =
           plan.title.toLowerCase().contains(_searchQuery.toLowerCase());
       final isUpcoming = plan.startTime.getMillisecondsSinceEpoch() > now;
@@ -354,7 +354,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
     if (filteredPlans.isEmpty) {
       return Center(child: Text('No matching plans found.'));
     }
-
+    if (upcoming) filteredPlans = filteredPlans.reversed.toList();
     return ListView(
       children: filteredPlans.map((e) => PlanCard(plan: e)).toList(),
     );

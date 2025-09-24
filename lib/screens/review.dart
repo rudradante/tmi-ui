@@ -159,7 +159,6 @@ class _ReviewPlansState extends State<ReviewPlans> {
     var result = await PlanReview.updateReview(request, context);
     if (result == null) return;
     _reviewing.remove(planId);
-    _planColors.remove(planId);
     fetchPlans();
   }
 }

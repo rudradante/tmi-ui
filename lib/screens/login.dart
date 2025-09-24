@@ -394,7 +394,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       "to receive reminder notifications even when the app is closed.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 16,
                         color: Colors.black54,
                         fontStyle: FontStyle.italic,
                       ),

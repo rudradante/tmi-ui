@@ -58,12 +58,11 @@ class Server {
       response = Response('Cannot connect to server', 500);
       print(e);
     }
-    if (response.statusCode == 401) {
-      await logout(context);
-      return response;
-    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     // if (response.statusCode == 401) {
     //   Navigator.pushAndRemoveUntil(
     //       context,
@@ -72,17 +71,20 @@ class Server {
     return response;
   }
 
-  static Future<void> logout(BuildContext context) async {
-    await showMessageDialog("Hey There!",
-        "Login session has expired. You need to login again", context);
+  static Future<void> logout(BuildContext context, String path) async {
+    if (path.contains("auth")) return;
     LoginUser.logout(context);
   }
 
   static String parseMessageFromResponse(String body) {
     try {
-      var jsonDecoded = jsonDecode(body) as List;
-      if (jsonDecoded == null || jsonDecoded.isEmpty) return body;
-      return jsonDecoded[0]['message'] ?? body;
+      var jsonDecoded = jsonDecode(body);
+      if (jsonDecoded is List && jsonDecoded.isEmpty) {
+        return jsonDecoded[0]['message'] ?? body;
+      } else {
+        var dm = jsonDecoded['message'];
+        return dm ?? body;
+      }
     } catch (err) {
       print(err);
       return body;
@@ -121,12 +123,11 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    if (response.statusCode == 401) {
-      await logout(context);
-      return response;
-    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 
@@ -163,12 +164,11 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    if (response.statusCode == 401) {
-      await logout(context);
-      return response;
-    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 
@@ -205,12 +205,11 @@ class Server {
       print(e);
       response = Response('Cannot connect to server', 500);
     }
-    if (response.statusCode == 401) {
-      await logout(context);
-      return response;
-    }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 

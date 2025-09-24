@@ -109,10 +109,11 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     CustomScaffold.bodyHeight = sf.size.height -
         appBar.preferredSize.height -
         (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
-        getNavigationBarHeight(context);
+        getNavigationBarHeight();
     return Scaffold(
       extendBody: true,
       appBar: appBar,
+      resizeToAvoidBottomInset: true,
       backgroundColor: widget.scaffoldBackgroundColor,
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -187,7 +188,7 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   }
 }
 
-int getNavigationBarHeight(BuildContext context) {
+int getNavigationBarHeight() {
   return kIsWeb
       ? 0
       : Platform.isAndroid || Platform.isIOS
