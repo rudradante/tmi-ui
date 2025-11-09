@@ -229,7 +229,7 @@ class _MyAccountScreenState extends State<MyAccountScreen> {
                       child: GestureDetector(
                         onTap: () {
                           // You can navigate to a Terms & Conditions screen here if needed
-                          launchUrlString("https://www.google.com");
+                          launchUrlString("https://www.timaapp.com/privacy-policy");
                         },
                         child: const Text.rich(
                           TextSpan(
@@ -543,3 +543,4 @@ class MyAccountRoute {
                 isSignUpFlow: isSignUpFlow, plans: plans, account: account)));
   }
 }
+
