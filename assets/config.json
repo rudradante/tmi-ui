@@ -1,14 +1,17 @@
 {
-  "environment": "dev",
+  "environment": "prod",
   "server": {
     "baseUrl": {
-      "dev": "ec2-3-110-155-51.ap-south-1.compute.amazonaws.com"
+      "dev": "timaapp.com",
+      "prod": "timaapp.com"
     },
     "port": {
-      "dev": "80"
+      "dev": "80",
+      "prod": "443"
     },
     "protocol": {
-      "dev": "http"
+      "dev": "http",
+      "prod": "https"
     }
   },
   "theme": {

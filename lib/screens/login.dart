@@ -7,10 +7,12 @@ import 'package:tmiui/helpers/file_system.dart';
 import 'package:tmiui/models.dart/login_user.dart';
 import 'package:tmiui/screens/my_account.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../config/config_provider.dart';
 import '../custom_widgets/custom_flat_button.dart';
 import '../custom_widgets/custom_scaffold.dart';
+import '../custom_widgets/custom_text.dart';
 import '../custom_widgets/message_dialog.dart';
 import '../extensions/color.dart';
 
@@ -346,6 +348,15 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(8.0),
         child: Image.asset("assets/icons/empty.png", width: 16, height: 16),
       ),
+      actions: [
+        kIsWeb
+            ? TextButton.icon(
+                icon: Icon(Icons.download_rounded, color: Colors.white),
+                onPressed: _downloadWindowsTapped,
+                label: CustomText(
+                    text: "Download for windows", color: Colors.white))
+            : SizedBox()
+      ],
       showBackButton: false,
       appBarTitleSize: 32,
       appBarBackgroundColor: HexColor.fromHex(theme.scaffoldBackgroundColor),
@@ -405,5 +416,9 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  void _downloadWindowsTapped() {
+    launchUrlString("https://www.timaapp.com/assets/tima.zip");
   }
 }
