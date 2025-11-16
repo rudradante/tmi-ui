@@ -9,7 +9,7 @@ import 'package:tmiui/custom_widgets/custom_text.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/models.dart/plan.dart';
 import 'package:tmiui/models.dart/plan_review.dart';
-import 'package:tmiui/screens/add_plan.dart';
+import 'package:tmiui/screens/ai.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/screen_types.dart';
 
@@ -27,7 +27,9 @@ final List<Color> _cardColors = [
 final Map<String, Color> _planColors = {};
 
 class ReviewPlans extends StatefulWidget {
-  const ReviewPlans({Key? key}) : super(key: key);
+  final TmiDateTime initialDateTime;
+  const ReviewPlans({Key? key, required this.initialDateTime})
+      : super(key: key);
 
   @override
   State<ReviewPlans> createState() => _ReviewPlansState();
@@ -45,7 +47,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
     _reviewing.clear();
     _planColors.clear();
     _calendarController = CalendarController();
-    _calendarController.displayDate = TmiDateTime.nowWithMinDate().toDateTime();
+    _calendarController.displayDate = widget.initialDateTime.toDateTime();
     _dateNotifier.value = _calendarController.displayDate!;
     _calendarController.view = CalendarView.day;
     _calendarController.addPropertyChangedListener((p0) {
@@ -79,6 +81,8 @@ class _ReviewPlansState extends State<ReviewPlans> {
             key: UniqueKey(),
             allowViewNavigation: true,
             allowDragAndDrop: false,
+            todayHighlightColor: HexColor.fromHex(
+                ConfigProvider.getThemeConfig().primaryScheduleCardColor),
             //view: selectedView,
             dataSource: MeetingDataSource(_plans),
             showCurrentTimeIndicator: true,
@@ -92,7 +96,7 @@ class _ReviewPlansState extends State<ReviewPlans> {
           )),
       bottomAppBar: getTmiBottomAppBar(context, ScreenType.Review,
           bgColor: HexColor.fromHex(
-              ConfigProvider.getThemeConfig().scaffoldBackgroundColor),
+              ConfigProvider.getThemeConfig().primaryScheduleCardColor),
           fgColor: Colors.white),
       actions: [
         ValueListenableBuilder(
@@ -112,6 +116,22 @@ class _ReviewPlansState extends State<ReviewPlans> {
               );
             })
       ],
+      floatingActionButton: FloatingActionButton(
+        tooltip: "TIMA Pro",
+        shape: const CircleBorder(),
+        backgroundColor: HexColor.fromHex(
+            ConfigProvider.getThemeConfig().primaryThemeForegroundColor),
+        onPressed: () {
+          AIPlansRoute.push(context, [], (p0) {});
+        },
+        child: Container(
+            child: SvgPicture.asset(
+          'assets/icons/ai.svg',
+          height: 32,
+          width: 32,
+          color: Colors.white,
+        )),
+      ),
     );
   }
 
@@ -139,7 +159,6 @@ class _ReviewPlansState extends State<ReviewPlans> {
     var result = await PlanReview.updateReview(request, context);
     if (result == null) return;
     _reviewing.remove(planId);
-    _planColors.remove(planId);
     fetchPlans();
   }
 }
@@ -233,7 +252,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                 padding: const EdgeInsets.all(4),
                                 child: inReviewMode
                                     ? Slider(
-                                        divisions: 100,
+                                        divisions: 20,
                                         min: 0,
                                         max: 100,
                                         label: (percentage).toString(),
@@ -373,7 +392,7 @@ class _ReviewCardWidgetState extends State<ReviewCardWidget> {
                                       ConfigProvider.getThemeConfig()
                                           .primaryThemeForegroundColor))),
                           child: Tooltip(
-                              message: "Reset",
+                              message: "Back",
                               child: Icon(Icons.undo,
                                   size: 14,
                                   color: HexColor.fromHex(
@@ -537,7 +556,7 @@ class _ReviewPercentagePickerState extends State<ReviewPercentagePicker> {
       children: [
         Expanded(
             child: Slider(
-          divisions: 100,
+          divisions: 20,
           min: 0,
           max: 100,
           label: (percentage).toString(),
@@ -607,9 +626,15 @@ class MeetingDataSource extends CalendarDataSource {
 }
 
 class ReviewPlansRoute {
-  static Future push(BuildContext context, List<Plan> plans) async {
+  static Future push(BuildContext context, List<Plan> plans,
+      {TmiDateTime? initialDateTime}) async {
     await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const ReviewPlans()));
+        context,
+        MaterialPageRoute(
+            builder: (context) => ReviewPlans(
+                  initialDateTime:
+                      initialDateTime ?? TmiDateTime.nowWithMinDate(),
+                )));
   }
 }
 

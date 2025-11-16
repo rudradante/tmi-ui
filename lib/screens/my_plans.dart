@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tmiui/custom_widgets/custom_list_view.dart';
+import 'package:tmiui/custom_widgets/custom_scaffold.dart';
 import 'package:tmiui/screens/my_plan_card.dart';
 
 import '../models.dart/plan.dart';
@@ -23,13 +24,22 @@ class _MyPlansState extends State<MyPlans> {
   @override
   Widget build(BuildContext context) {
     return CustomListView(
+        showEmptyIcon: true,
         itemBuilder: (context, i) {
-          return MyPlanCard(
-              widget._plans[i],
-              widget.onPlanSelected,
-              widget.onPlanDeleted,
-              widget._plans[i].planId == widget.selectedPlanId,
-              widget.readonly);
+          return Padding(
+            padding: EdgeInsets.only(
+                bottom: i == (widget._plans.length - 1)
+                    ? getNavigationBarHeight().toDouble()
+                    : 0.0),
+            child: SizedBox(
+              child: MyPlanCard(
+                  widget._plans[i],
+                  widget.onPlanSelected,
+                  widget.onPlanDeleted,
+                  widget._plans[i].planId == widget.selectedPlanId,
+                  widget.readonly),
+            ),
+          );
         },
         itemCount: widget._plans.length);
   }

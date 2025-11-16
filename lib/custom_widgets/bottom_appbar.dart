@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/config/theme.dart';
+import 'package:tmiui/screens/ai.dart';
 import 'package:tmiui/screens/plan_dashboard.dart';
 import 'package:tmiui/screens/review.dart';
 import 'package:tmiui/screens/schedule.dart';
 import 'package:tmiui/screens/screen_types.dart';
+import 'package:tmiui/screens/my_account.dart';
 
 import '../extensions/color.dart';
 import 'custom_column.dart';
@@ -49,10 +52,16 @@ BottomAppBar getTmiBottomAppBar(BuildContext context, ScreenType currentScreen,
             textColor),
         BottomAppBarIconButton(
             "My Account",
-            Icons.account_box_outlined,
+            Icons.person_2_outlined,
             () => screenTapped(ScreenType.MyAccount, currentScreen, context),
             fgColor,
             textColor),
+        // BottomAppBarIconButton(
+        //     "Tima AI",
+        //     Icons.person_2_outlined,
+        //     () => screenTapped(ScreenType.AI, currentScreen, context),
+        //     fgColor,
+        //     textColor),
       ],
     ),
   );
@@ -71,6 +80,12 @@ void screenTapped(
       break;
     case ScreenType.Review:
       ReviewPlansRoute.push(context, []);
+
+    case ScreenType.AI:
+      AIPlansRoute.push(context, [], (p0) {});
+
+    case ScreenType.MyAccount:
+      MyAccountRoute.push(context, false);
     default:
       return;
   }

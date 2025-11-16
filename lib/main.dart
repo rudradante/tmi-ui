@@ -1,8 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tmiui/config/config_provider.dart';
 import 'package:tmiui/extensions/color.dart';
 import 'package:tmiui/screens/login.dart';
+
+import 'package:permission_handler/permission_handler.dart';
+import 'dart:io';
+
+import 'helpers/file_system.dart';
 
 class TmiApp extends StatelessWidget {
   const TmiApp({Key? key}) : super(key: key);
@@ -13,7 +19,7 @@ class TmiApp extends StatelessWidget {
         statusBarColor: HexColor.fromHex(themeConfig.appBarBackgroundColor),
         statusBarBrightness: Brightness.light));
     return MaterialApp(
-        title: 'TMI',
+        title: 'TiMA',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
             datePickerTheme: DatePickerThemeData(
@@ -78,12 +84,24 @@ class TmiApp extends StatelessWidget {
                 HexColor.fromHex(themeConfig.primaryThemeBackgroundColor),
             textButtonTheme:
                 TextButtonThemeData(style: ButtonStyle(elevation: MaterialStateProperty.all(8), foregroundColor: MaterialStateProperty.all(Colors.white), textStyle: MaterialStateProperty.all(const TextStyle()), backgroundColor: MaterialStateProperty.all(HexColor.fromHex(themeConfig.primaryThemeBackgroundColor))))),
-        home: const LoginPage());
+        home: const LoginScreen());
   }
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  AppFile.initialize();
   await ConfigProvider.initialize();
+  await requestAndroidNotificationPermission();
   runApp(const TmiApp());
+}
+
+Future<void> requestAndroidNotificationPermission() async {
+  if (!kIsWeb && Platform.isAndroid) {
+    var status = await Permission.notification.status;
+    print("Notification permission status: $status");
+    if (!status.isGranted) {
+      await Permission.notification.request();
+    }
+  }
 }

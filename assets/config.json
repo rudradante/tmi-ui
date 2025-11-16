@@ -1,14 +1,17 @@
 {
-  "environment": "dev",
+  "environment": "prod",
   "server": {
     "baseUrl": {
-      "dev": "56e2-2401-4900-1c66-7a5f-dd06-3897-9454-c4ef.ngrok-free.app"
+      "dev": "timaapp.com",
+      "prod": "timaapp.com"
     },
     "port": {
-      "dev": "443"
+      "dev": "80",
+      "prod": "443"
     },
     "protocol": {
-      "dev": "https"
+      "dev": "http",
+      "prod": "https"
     }
   },
   "theme": {

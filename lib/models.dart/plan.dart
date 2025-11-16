@@ -8,6 +8,7 @@ import 'package:tmiui/models.dart/plan_break.dart';
 import 'package:tmiui/models.dart/plan_note.dart';
 import 'package:tmiui/models.dart/plan_references.dart';
 import 'package:tmiui/models.dart/plan_review.dart';
+import 'package:tmiui/models.dart/reminder.dart';
 import 'package:tmiui/models.dart/tmi_datetime.dart';
 
 import '../server/request.dart';
@@ -45,30 +46,36 @@ class Plan extends BaseTable {
   }
 
   static Plan fromJson(Map<String, dynamic> json) {
-    return Plan(
-        TmiDateTime(json['createdOn'] ?? 0),
-        TmiDateTime(json['updatedOn'] ?? 0),
-        json['createdBy'] ?? "",
-        json['updatedBy'] ?? "",
-        json['title'] ?? "",
-        json['description'] ?? "",
-        TmiDateTime(json['startTime'] ?? 0),
-        TmiDateTime(json['endTime'] ?? 0),
-        json['planId'] ?? "",
-        json['userId'] ?? "",
-        (json['planReferences'] as List<dynamic>)
-            .map((e) => PlanReference.fromJson((e as Map<String, dynamic>)))
-            .toList(),
-        (json['breaks'] as List<dynamic>)
-            .map((e) => PlanBreak.fromJson((e as Map<String, dynamic>)))
-            .toList(),
-        (json['notes'] as List<dynamic>)
-            .map((e) => PlanNote.fromJson(
-                (e as Map<String, dynamic>), json['planId'] ?? ""))
-            .toList(),
-        (json['review'] == null
-            ? null
-            : PlanReview.fromJson(json['review'], json['planId'])));
+    try {
+      return Plan(
+          TmiDateTime(json['createdOn'] ?? 0),
+          TmiDateTime(json['updatedOn'] ?? 0),
+          json['createdBy'] ?? "",
+          json['updatedBy'] ?? "",
+          json['title'] ?? "",
+          json['description'] ?? "",
+          TmiDateTime(json['startTime'] ?? 0),
+          TmiDateTime(json['endTime'] ?? 0),
+          json['planId'] ?? "",
+          json['userId'] ?? "",
+          ((json['planReferences'] as List<dynamic>?) ?? [])
+              .map((e) => PlanReference.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+          ((json['breaks'] as List<dynamic>?) ?? [])
+              .map((e) => PlanBreak.fromJson((e as Map<String, dynamic>)))
+              .toList(),
+          ((json['notes'] as List<dynamic>?) ?? [])
+              .map((e) => PlanNote.fromJson(
+                  (e as Map<String, dynamic>), json['planId'] ?? ""))
+              .toList(),
+          (json['review'] == null
+              ? null
+              : PlanReview.fromJson(json['review'], json['planId'])));
+    } catch (err) {
+      print(err);
+      print(json);
+      return Plan.newPlan();
+    }
   }
 
   static Plan newPlan() {
@@ -110,6 +117,7 @@ class Plan extends BaseTable {
   static Future<Plan?> createPlan(Plan plan, BuildContext context) async {
     var response = await Server.post('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
+      await Reminder.syncReminders(context);
       return plan = Plan.fromJson((jsonDecode(response.body) as List)[0]);
     }
     return null;
@@ -118,13 +126,8 @@ class Plan extends BaseTable {
   static Future<Plan?> updatePlan(Plan plan, BuildContext context) async {
     var response = await Server.update('/plan', {}, jsonEncode(plan), context);
     if (Server.isSuccessHttpCode(response.statusCode)) {
-      try {
-        return plan;
-      } catch (err) {
-        if (kDebugMode) {
-          print(err);
-        }
-      }
+      await Reminder.syncReminders(context);
+      return plan;
     }
     return null;
   }
@@ -148,9 +151,32 @@ class Plan extends BaseTable {
     return [];
   }
 
+  static Future<List<Plan>> getPredictedPlans(
+      TmiDateTime dateTime, BuildContext context) async {
+    var url = '/plan/predict';
+    url += '/${dateTime.getMillisecondsSinceEpoch()}';
+    var response = await Server.get(url, {}, context);
+    if (Server.isSuccessHttpCode(response.statusCode)) {
+      var responseJson = jsonDecode(response.body);
+      print(responseJson);
+      print(response.statusCode);
+      var results =
+          (responseJson as List<dynamic>).map((e) => Plan.fromJson(e)).toList();
+      results.sort((a, b) => a.startTime
+          .getMillisecondsSinceEpoch()
+          .compareTo(b.endTime.getMillisecondsSinceEpoch()));
+      return results;
+    }
+    return [];
+  }
+
   static Future<bool> deletePlan(String planId, BuildContext context) async {
     var response = await Server.delete('/plan/$planId', {}, context);
-    return Server.isSuccessHttpCode(response.statusCode);
+    var deleted = Server.isSuccessHttpCode(response.statusCode);
+    if (deleted) {
+      await Reminder.syncReminders(context);
+    }
+    return deleted;
   }
 
   bool isNewPlan() => int.tryParse(planId) != null;

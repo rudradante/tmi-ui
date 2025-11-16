@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:tmiui/models.dart/login_user.dart';
 
 import '../config/config_provider.dart';
 import '../custom_widgets/message_dialog.dart';
@@ -16,9 +17,15 @@ class Server {
   }
 
   static final Client _http = Client();
-  static const Map<String, String> _headers = {
-    "Content-Type": "application/json"
+  static final Map<String, String> __headers = {
+    "Content-Type": "application/json",
+    "Authorization": LoginUser.currentLoginUser.getBearerToken()
   };
+  static Map<String, String> getUpdatedHeader() {
+    __headers["Authorization"] = LoginUser.currentLoginUser.getBearerToken();
+    return __headers;
+  }
+
   static Future<Response> get(
       String path, Map<String, String> query, BuildContext context,
       {bool showPendingDialog = true}) async {
@@ -39,7 +46,7 @@ class Server {
           host: config.baseUrl,
           path: path,
           queryParameters: query);
-      response = await _http.get(uri, headers: _headers);
+      response = await _http.get(uri, headers: getUpdatedHeader());
       if (showPendingDialog && Navigator.canPop(context)) {
         Navigator.pop(context);
       }
@@ -53,6 +60,9 @@ class Server {
     }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     // if (response.statusCode == 401) {
     //   Navigator.pushAndRemoveUntil(
     //       context,
@@ -61,11 +71,20 @@ class Server {
     return response;
   }
 
+  static Future<void> logout(BuildContext context, String path) async {
+    if (path.contains("auth")) return;
+    LoginUser.logout(context);
+  }
+
   static String parseMessageFromResponse(String body) {
     try {
-      var jsonDecoded = jsonDecode(body) as List;
-      if (jsonDecoded == null || jsonDecoded.isEmpty) return body;
-      return jsonDecoded[0]['message'] ?? body;
+      var jsonDecoded = jsonDecode(body);
+      if (jsonDecoded is List && jsonDecoded.isEmpty) {
+        return jsonDecoded[0]['message'] ?? body;
+      } else {
+        var dm = jsonDecoded['message'];
+        return dm ?? body;
+      }
     } catch (err) {
       print(err);
       return body;
@@ -92,7 +111,7 @@ class Server {
           host: config.baseUrl,
           path: path,
           queryParameters: query);
-      response = await _http.post(uri, body: body, headers: _headers);
+      response = await _http.post(uri, body: body, headers: getUpdatedHeader());
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
@@ -106,6 +125,9 @@ class Server {
     }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 
@@ -130,7 +152,7 @@ class Server {
           host: config.baseUrl,
           path: path,
           queryParameters: query);
-      response = await _http.put(uri, body: body, headers: _headers);
+      response = await _http.put(uri, body: body, headers: getUpdatedHeader());
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
@@ -144,6 +166,9 @@ class Server {
     }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 
@@ -168,7 +193,7 @@ class Server {
           host: config.baseUrl,
           path: path,
           queryParameters: query);
-      response = await _http.delete(uri, headers: _headers);
+      response = await _http.delete(uri, headers: getUpdatedHeader());
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
@@ -182,6 +207,9 @@ class Server {
     }
     await showMessageDialog(
         "Hey There!", parseMessageFromResponse(response.body), context);
+    if (response.statusCode == 401) {
+      await logout(context, path);
+    }
     return response;
   }
 
@@ -243,6 +271,7 @@ class Server {
       if (showPendingDialog && Navigator.canPop(context) && isOpen) {
         Navigator.pop(context);
       }
+
       print(e);
       return Response("Something Went Wrong", 500);
     }

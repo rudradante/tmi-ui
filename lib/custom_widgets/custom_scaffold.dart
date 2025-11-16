@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -33,7 +35,7 @@ class CustomScaffold extends StatefulWidget {
   final Color scaffoldBackgroundColor;
   final Color? appBarBackgroundColor;
   final bool showBackButton;
-  final BottomAppBar? bottomAppBar;
+  final Widget? bottomAppBar;
 
   const CustomScaffold(
       {Key? key,
@@ -108,10 +110,11 @@ class _CustomScaffoldState extends State<CustomScaffold> {
     CustomScaffold.bodyHeight = sf.size.height -
         appBar.preferredSize.height -
         (widget.bottomAppBar == null ? 0 : kBottomNavigationBarHeight) -
-        96;
+        getNavigationBarHeight();
     return Scaffold(
       extendBody: true,
       appBar: appBar,
+      resizeToAvoidBottomInset: true,
       backgroundColor: widget.scaffoldBackgroundColor,
       floatingActionButton: widget.floatingActionButton,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -186,11 +189,10 @@ class _CustomScaffoldState extends State<CustomScaffold> {
   }
 }
 
-Future<double> getNavigationBarHeight(BuildContext context) async {
-  double fullHeight = MediaQuery.of(context).size.height;
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual, overlays: []);
-  double heightWithoutNav = MediaQuery.of(context).size.height;
-  await SystemChrome.setEnabledSystemUIMode(SystemUiMode.manual,
-      overlays: SystemUiOverlay.values);
-  return fullHeight - heightWithoutNav;
+int getNavigationBarHeight() {
+  return kIsWeb
+      ? 0
+      : Platform.isAndroid || Platform.isIOS
+          ? 96
+          : 0;
 }

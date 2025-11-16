@@ -1,1 +1,1 @@
-enum ScreenType { Dashboard, Schedule, MyAccount, Review }
+enum ScreenType { Dashboard, Schedule, MyAccount, Review, AI }

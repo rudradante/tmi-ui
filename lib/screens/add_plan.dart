@@ -178,7 +178,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                                 ? () {}
                                 : chooseStartTimeTapped,
                             text:
-                                "${plan.startTime.getTimeAsString()}, ${plan.startTime.getDateAsString()}",
+                                "${plan.startTime.getTimeAsString()}\n${plan.startTime.getDateAsString()}",
                             color: widget.notEditable
                                 ? Colors.grey
                                 : HexColor.fromHex(
@@ -200,7 +200,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
                                 ? () {}
                                 : chooseEndTimeTapped,
                             text:
-                                "${plan.endTime.getTimeAsString()}, ${plan.endTime.getDateAsString()}",
+                                "${plan.endTime.getTimeAsString()}\n${plan.endTime.getDateAsString()}",
                             color: widget.notEditable
                                 ? Colors.grey
                                 : HexColor.fromHex(
@@ -276,20 +276,22 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
     if (kIsWeb) {
       var proceed = await showShouldProceedDialog(
           "Local reference",
-          "Adding local reference is only supported in desktop/mobile version. You will have to add the file location manually in web version. Do you want to continue?",
+          "Adding local reference is only supported in desktop/mobile version. Do you want to continue?",
           context);
       if (!proceed) return;
       await addWebLink(locationHintText: "File location");
       return;
     }
-    var file = await FilePicker.platform.pickFiles();
+    var file = await FilePicker.platform.pickFiles(allowMultiple: true);
     if (file == null) {
       return;
     }
-    var newReference = PlanReference.newReference(plan.planId);
-    newReference.hyperlink = file.files.single.path!;
-    newReference.description = file.files.single.name;
-    plan.planReferences.add(newReference);
+    for (var f in file.files) {
+      var newReference = PlanReference.newReference(plan.planId);
+      newReference.hyperlink = f.path!;
+      newReference.description = f.name;
+      plan.planReferences.add(newReference);
+    }
     setState(() {});
   }
 
@@ -302,7 +304,8 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   Future chooseStartTimeTapped() async {
-    var result = await chooseDateAndTime(context, fieldLableText: "Start Time");
+    var result = await chooseDateAndTime(context,
+        fieldLableText: "Start Time", firstDateTime: TmiDateTime.now());
     if (result == null) return;
     plan.startTime = result;
     plan.breaks.removeWhere((element) =>
@@ -314,9 +317,15 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
   }
 
   String? showStartEndTimeValidationIfApplicable() {
-    if (plan.startTime.getMillisecondsSinceEpoch() >=
-        plan.endTime.getMillisecondsSinceEpoch()) {
-      return "Seems like the start time is ahead or same as end time. Please update the end time";
+    if ((plan.startTime.getMillisecondsSinceEpoch() >
+        plan.endTime.getMillisecondsSinceEpoch())) {
+      return "Start time cannot be after the end time";
+    }
+    if (plan.endTime
+            .getMillisecondsSinceEpoch()
+            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
+        0) {
+      return "Plan cannot be set in past";
     }
     if ((plan.endTime.getMillisecondsSinceEpoch() -
             plan.startTime.getMillisecondsSinceEpoch()) <
@@ -356,14 +365,7 @@ class _AddOrUpdatePlanState extends State<AddOrUpdatePlan> {
           "Start time of the plan cannot be ahead of end time", context);
       return;
     }
-    if (plan.endTime
-            .getMillisecondsSinceEpoch()
-            .compareTo(TmiDateTime.now().getMillisecondsSinceEpoch()) <=
-        0) {
-      await showMessageDialog(
-          "Invalid time", "Plan cannot be set in past", context);
-      return;
-    }
+
     String? validationError = showStartEndTimeValidationIfApplicable() ??
         showBreakTimingValidationWithRespectToPlanIfApplicable();
     if (validationError != null) {

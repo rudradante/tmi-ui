@@ -78,6 +78,8 @@ class _SchedulePlansState extends State<SchedulePlans> {
             allowDragAndDrop: false,
             //view: selectedView,
             dataSource: MeetingDataSource(_plans),
+            todayHighlightColor: HexColor.fromHex(
+                ConfigProvider.getThemeConfig().primaryScheduleCardColor),
             showCurrentTimeIndicator: true,
             appointmentBuilder: appointmentBuilder,
             timeSlotViewSettings: const TimeSlotViewSettings(
@@ -267,8 +269,11 @@ class _SchedulePlansState extends State<SchedulePlans> {
 
   void cloneTapped(Plan plan) async {
     plan.planId = TmiDateTime.now().getMillisecondsSinceEpoch().toString();
-    plan.startTime = plan.startTime.add(const Duration(days: 1));
-    plan.endTime = plan.endTime.add(const Duration(days: 1));
+    plan.startTime = TmiDateTime(TmiDateTime.now()
+        .toDateTime()
+        .add(Duration(days: 1))
+        .millisecondsSinceEpoch);
+    plan.endTime = plan.startTime.add(const Duration(hours: 1));
     await PlanDashboardRoute.push(context,
         selectedPlan: plan,
         isCloneView: true,

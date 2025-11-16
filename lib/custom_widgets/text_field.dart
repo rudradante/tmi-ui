@@ -23,6 +23,7 @@ class CustomTextField extends StatefulWidget {
   final void Function()? onTap;
   final void Function(String?)? onSubmitted;
   final double borderRadius;
+  final int? maxLength;
   const CustomTextField(
       {Key? key,
       required this.controller,
@@ -44,7 +45,8 @@ class CustomTextField extends StatefulWidget {
       this.borderColor,
       this.fillColor,
       this.textColor,
-      this.borderRadius = 8})
+      this.borderRadius = 8,
+      this.maxLength})
       : super(key: key);
 
   @override
@@ -72,6 +74,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
           onSubmitted: widget.onSubmitted,
           onTap: widget.onTap,
           focusNode: widget.focusNode,
+          maxLength: widget.maxLength,
           onChanged: widget.onEditing,
           obscureText: hiddenText,
           controller: widget.controller,
@@ -138,8 +141,8 @@ class _CustomTextFieldState extends State<CustomTextField> {
         onPressed: () => setState(() {
               hiddenText = !hiddenText;
             }),
-        icon: ImageIcon(
-            AssetImage('assets/icons/${!hiddenText ? 'hide.png' : 'show.png'}'),
+        icon: Icon(
+            !hiddenText ? Icons.visibility_off_sharp : Icons.visibility_sharp,
             size: 18 * sf.cf));
   }
 }

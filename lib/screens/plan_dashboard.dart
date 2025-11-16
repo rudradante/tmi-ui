@@ -12,6 +12,7 @@ import 'package:tmiui/screens/screen_types.dart';
 import '../custom_widgets/bottom_appbar.dart';
 import '../custom_widgets/custom_text.dart';
 import '../models.dart/plan.dart';
+import '../models.dart/reminder.dart';
 import '../models.dart/tmi_datetime.dart';
 import 'my_plans.dart';
 
@@ -44,6 +45,7 @@ class _PlanDashboardState extends State<PlanDashboard> {
     selectedPlanKey = Key(DateTime.now().microsecondsSinceEpoch.toString());
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (!widget.isCloneView) {
+        Reminder.syncReminders(context);
         refreshPlans(preserveSelectedPlan: widget.selectedPlan != null);
       } else {
         ScreenFactors sf = calculateScreenFactors(context);
@@ -61,7 +63,12 @@ class _PlanDashboardState extends State<PlanDashboard> {
     var theme = ConfigProvider.getThemeConfig();
     var sf = calculateScreenFactors(context);
     return CustomScaffold(
-        showBackButton: false,
+        showBackButton: widget.isCloneView,
+        leadingAppbarWidget: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Image.asset("assets/icons/empty.png",
+              width: 16 * sf.cf, height: 16 * sf.cf),
+        ),
         title: sf.maxComponents <= 2
             ? widget.editPlanSectionTitle
             : widget.editPlanSectionTitle,
@@ -177,6 +184,15 @@ class _PlanDashboardState extends State<PlanDashboard> {
     }
     if (widget.isCloneView) {
       _plans.add(plan);
+      widget.selectedPlan!.planId =
+          TmiDateTime.now().getMillisecondsSinceEpoch().toString();
+      widget.selectedPlan!.startTime = plan.startTime = TmiDateTime(
+          TmiDateTime.now()
+              .toDateTime()
+              .add(Duration(days: 1))
+              .millisecondsSinceEpoch);
+      widget.selectedPlan!.endTime =
+          plan.startTime.add(const Duration(hours: 1));
       setState(() {});
     } else {
       refreshPlans();
@@ -237,8 +253,9 @@ class MyPlanDateSelector extends StatefulWidget {
   final bool weekView;
   final void Function(TmiDateTime) onDateChanged;
   final TmiDateTime selectedDate;
+  final TmiDateTime? minDate, maxDate;
   const MyPlanDateSelector(this.onDateChanged, this.selectedDate,
-      {Key? key, this.weekView = false})
+      {Key? key, this.weekView = false, this.minDate, this.maxDate})
       : super(key: key);
 
   @override
@@ -247,11 +264,15 @@ class MyPlanDateSelector extends StatefulWidget {
 
 class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
   TmiDateTime selectedDate = TmiDateTime.nowWithMinDate();
-
+  TmiDateTime minDate = TmiDateTime.nowWithMinDate();
+  TmiDateTime maxDate = TmiDateTime.nowWithMinDate();
   @override
   void initState() {
     super.initState();
     selectedDate = widget.selectedDate;
+    minDate = widget.minDate ?? TmiDateTime(0);
+    maxDate =
+        widget.maxDate ?? TmiDateTime.nowWithMinDate().add(Duration(days: 366));
   }
 
   @override
@@ -266,10 +287,13 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
     return CustomRow(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconButton(
-            onPressed: previousDateTapped,
-            icon: Icon(Icons.arrow_back_ios_outlined,
-                color: HexColor.fromHex(theme.appBarForegroundColor))),
+        selectedDate.toMinDate().getMillisecondsSinceEpoch() ==
+                minDate.toMinDate().getMillisecondsSinceEpoch()
+            ? SizedBox()
+            : IconButton(
+                onPressed: previousDateTapped,
+                icon: Icon(Icons.arrow_back_ios_outlined,
+                    color: HexColor.fromHex(theme.appBarForegroundColor))),
         InkWell(
           onTap: chooseDateTapped,
           child: CustomText(
@@ -278,10 +302,13 @@ class _MyPlanDateSelectorState extends State<MyPlanDateSelector> {
             color: HexColor.fromHex(theme.appBarForegroundColor),
           ),
         ),
-        IconButton(
-            onPressed: nextDateTapped,
-            icon: Icon(Icons.arrow_forward_ios_outlined,
-                color: HexColor.fromHex(theme.appBarForegroundColor))),
+        selectedDate.toMinDate().getMillisecondsSinceEpoch() ==
+                maxDate.toMinDate().getMillisecondsSinceEpoch()
+            ? SizedBox()
+            : IconButton(
+                onPressed: nextDateTapped,
+                icon: Icon(Icons.arrow_forward_ios_outlined,
+                    color: HexColor.fromHex(theme.appBarForegroundColor))),
       ],
     );
   }
